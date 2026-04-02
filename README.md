@@ -10,7 +10,7 @@
 
 ## Overview
 
-Garden OS is a single-page application (SPA) built to manage a 4' × 12' vegetable plot at the Avon Lake Community Garden (Avon Lake, OH). It solves a specific problem: multiple people managing the same garden plot from different devices — phones in the field, desktops at home — without their data colliding or overwriting each other.
+Garden OS is a single-page application (SPA) built to manage a 4' × 12' vegetable plot for a community garden plot. It solves a specific problem: multiple people managing the same garden plot from different devices — phones in the field, desktops at home — without their data colliding or overwriting each other.
 
 The application combines real-time local weather telemetry, a persistent cloud state engine, and a visual plot blueprint into a single HTML file that works as well on an iPhone in direct sunlight as it does on a desktop browser.
 
@@ -32,7 +32,7 @@ Three external services are orchestrated:
 
 **1. OpenWeatherMap API (Telemetry)**
 
-Weather data is fetched on page load from the OpenWeatherMap One Call 3.0 API, targeting the exact GPS coordinates of Avon Lake (41.50°N, 82.02°W). The app pulls current temperature, wind speed, precipitation, and overnight forecast data. This feeds two alert conditions evaluated in real time:
+Weather data is fetched on page load from the OpenWeatherMap One Call 3.0 API, targeting the GPS coordinates of the garden location. The app pulls current temperature, wind speed, precipitation, and overnight forecast data. This feeds two alert conditions evaluated in real time:
 
 - **Frost Alert**: triggered when overnight low temperatures are forecast at or below 36°F — a threshold chosen for leafy vegetables that can suffer cold damage before a true frost
 - **Wind Alert**: triggered when gusts exceed 30 mph — critical for trellis-supported crops like cucumbers and climbing beans
@@ -147,7 +147,7 @@ The color palette is built around a soil/bark/sprout theme:
 
 ## Features
 
-- **Live weather bar** — current temperature, humidity, wind, and precipitation for Avon Lake
+- **Live weather bar** — current temperature, humidity, wind, and precipitation for the local area
 - **Frost alert** — pulsing red header when overnight temps ≤ 36°F
 - **Wind alert** — pulsing red header when gusts exceed 30 mph
 - **Visual plot blueprint** — 4' × 12' CSS grid with per-crop cell rendering
@@ -180,8 +180,8 @@ Open `avon_lake_garden_final.html` in a text editor. Scroll to the `/* ── CO
 ```javascript
 const BIN_KEY     = 'YOUR_JSONBIN_MASTER_KEY';   // JSONBin Master Key
 const WEATHER_KEY = 'YOUR_OPENWEATHERMAP_KEY';   // OpenWeatherMap API key
-const LAT         = '41.50';                      // Latitude
-const LON         = '-82.02';                     // Longitude (Avon Lake, OH)
+const LAT         = 'YOUR_LATITUDE';              // Latitude
+const LON         = 'YOUR_LONGITUDE';             // Longitude
 ```
 
 Adjust `LAT` and `LON` if deploying for a different location.
@@ -225,5 +225,5 @@ Garden 2026 Project/
 - Weather data is fetched once on page load. Refresh the page to update weather conditions.
 - The timestamp handshake conflict detection is designed for two concurrent users. High-frequency simultaneous writes from many users are not supported.
 - JSONBin.io free tier has request rate limits. For heavy use, a paid tier or alternative persistence layer is recommended.
-- The plot layout (crop placement, varieties, dates) is hardcoded for the 2026 Avon Lake season. To adapt for a different plot or season, the grid HTML in the body must be edited directly.
+- The plot layout (crop placement, varieties, dates) is hardcoded for the 2026 season. To adapt for a different plot or season, the grid HTML in the body must be edited directly.
 - OpenWeatherMap One Call 3.0 requires a paid subscription after the free tier request limit is reached.

@@ -67,7 +67,7 @@
 /* Smooth page scroll on iOS */
 html { -webkit-overflow-scrolling: touch; }
 </style>
-<title>Avon Lake Community Garden — My 2026 Plot</title>
+<title>My 2026 Garden Plot</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -337,11 +337,11 @@ body.summer .su-hint { display:block; }
 <body class="spring">
 
 <div class="page-header">
-  <div class="badge">My 2026 Plot · Avon Lake Community Garden</div>
+  <div class="badge">My 2026 Garden Plot</div>
   <h1>4&prime; &times; 12&prime; Planting Layout &amp; Strategy</h1>
   <!-- Live weather bar — populated by JS -->
   <div id="weather-bar" class="weather-bar">
-    <span id="weather-loading" style="font-size:11px;color:var(--faint);font-style:italic;">Loading Avon Lake weather…</span>
+    <span id="weather-loading" style="font-size:11px;color:var(--faint);font-style:italic;">Loading local weather…</span>
   </div>
 </div>
 
@@ -636,7 +636,7 @@ body.summer .su-hint { display:block; }
   </div>
 
   <div class="notes">
-    <div class="nc"><div class="ni">🗓️</div><div class="nt">Avon Lake Last Frost</div><p>Typically May 10–15. Start cool-weather crops in late March/April. Hold warm-season transplants until after Mother's Day.</p></div>
+    <div class="nc"><div class="ni">🗓️</div><div class="nt">Local Last Frost</div><p>Typically May 10–15. Start cool-weather crops in late March/April. Hold warm-season transplants until after Mother's Day.</p></div>
     <div class="nc gr"><div class="ni">🏗️</div><div class="nt">Infra First</div><p>Set all cages, the A-frame, and stakes BEFORE planting. Driving supports through roots causes serious damage.</p></div>
     <div class="nc bl"><div class="ni">🫛🥒</div><div class="nt">A-Frame Split</div><p>Cols 11–12 row 1 = Snap Peas (north face). Cols 11–12 row 2 = Cucumbers (south face). Ridge runs between the two rows.</p></div>
     <div class="nc or"><div class="ni">☀️</div><div class="nt">Season Toggle</div><p>Hit Summer to switch the blueprint to your succession layout. Col 1: Radishes → Bush Beans. Col 2: Spinach → Jalapeños. Col 3: Kale → Habaneros. Trellis row 1: Snap Peas → Cucumbers (full A-frame). All other zones stay the same.</p></div>
@@ -645,7 +645,7 @@ body.summer .su-hint { display:block; }
 </div><!-- /card -->
 
 <div style="text-align:center;font-family:'DM Mono',monospace;font-size:8.5px;color:rgba(245,237,216,0.2);margin-top:16px;letter-spacing:1.5px;">
-  AVON LAKE COMMUNITY GARDEN &middot; MY 4′ × 12′ PLOT &middot; ORGANIC SEASONAL PLAN &middot; 2026
+  MY GARDEN &middot; 4′ × 12′ PLOT &middot; ORGANIC SEASONAL PLAN &middot; 2026
 </div>
 
 <script>
@@ -657,11 +657,11 @@ function setSeason(s){
 }
 
 // ══════════════════════════════════════════════════
-// WEATHER SYSTEM — OpenWeatherMap zip 44012
+// WEATHER SYSTEM — OpenWeatherMap
 // ══════════════════════════════════════════════════
 (function(){
   var OWM='YOUR_OPENWEATHERMAP_API_KEY'; // OpenWeatherMap API key
-  var ZIP='44012';
+  var ZIP='YOUR_ZIP_CODE';
   function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
   function badge(txt,cls){var b=document.createElement('span');b.className='wb-badge '+(cls||'');b.textContent=txt;return b;}
   function wbItem(label,val,sub){
@@ -686,7 +686,7 @@ function setSeason(s){
     bar.innerHTML='';
     if(isAlert){bar.classList.add('alert');var ic=document.createElement('span');ic.className='wb-alert-icon';ic.textContent='⚠️';bar.appendChild(ic);}
     else{bar.classList.remove('alert');}
-    bar.appendChild(wbItem('Avon Lake',temp+'°F','feels '+feels+'°F'));
+    bar.appendChild(wbItem('My Garden',temp+'°F','feels '+feels+'°F'));
     var lowEl=wbItem('Low Tonight',low+'°F','');
     if(isFrost)lowEl.appendChild(badge('❄️ Frost Warning','frost'));
     bar.appendChild(lowEl);
