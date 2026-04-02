@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="My Garden 2026">
+<style>
+/* ── MOBILE FIXES ── */
+@media (max-width: 900px) {
+
+  /* Stack blueprint on top, tracker below */
+  .grid-and-tracker {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  /* Blueprint scrolls left-right with finger swipe */
+  .grid-left {
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
+  /* Give the plot a minimum width so it doesn't collapse */
+  .plot {
+    min-width: calc(var(--LW) + 12 * var(--CW));
+    touch-action: pan-x pan-y;
+  }
+
+  .zone-strip {
+    min-width: calc(var(--LW) + 12 * var(--CW));
+  }
+
+  /* Tracker full width below */
+  .hp {
+    width: 100% !important;
+    max-height: 380px;
+  }
+
+  /* Hide callout bar on small screens to save space */
+  .callout-bar { display: none; }
+
+  /* Stack the meta row */
+  .grid-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .grid-meta-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .grid-section { padding: 14px 12px 10px; }
+}
+
+/* Season buttons — large easy tap targets on all screen sizes */
+.season-btn {
+  min-height: 40px;
+  min-width: 80px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth page scroll on iOS */
+html { -webkit-overflow-scrolling: touch; }
+</style>
+<title>Avon Lake Community Garden — My 2026 Plot</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --soil:   #2C1A0E; --bark: #3A2210; --moss: #3D5A2C;
+  --sprout: #8AB55A; --cream: #F5EDD8; --gold: #C8923A;
+  --gold-lt:#E8B86A; --sky: #4A7FA8; --sky-lt: #7FB3D4;
+  --dim:    rgba(245,237,216,0.65); --faint: rgba(245,237,216,0.38);
+  --dash:   rgba(200,146,58,0.42);
+  --CW: 58px; --CH: 85px; --LW: 26px;
+}
+body { background:var(--soil); font-family:'DM Sans',sans-serif; color:var(--cream); padding:24px 16px 52px; min-height:100vh; }
+
+/* Season visibility */
+body.spring .su-only { display:none !important; }
+body.summer .sp-only { display:none !important; }
+
+/* Header */
+.page-header { text-align:center; margin-bottom:20px; }
+.badge { display:inline-block; background:var(--moss); color:var(--sprout); font-family:'DM Mono',monospace; font-size:9px; letter-spacing:3px; text-transform:uppercase; padding:4px 14px; border-radius:20px; margin-bottom:10px; border:1px solid rgba(138,181,90,0.3); }
+.page-header h1 { font-family:'Playfair Display',serif; font-size:clamp(18px,3vw,28px); line-height:1.2; margin-bottom:5px; }
+.page-header .sub { font-size:11.5px; color:var(--gold-lt); font-style:italic; }
+
+/* Card */
+.card { background:var(--bark); border-radius:18px; border:1px solid rgba(200,146,58,0.3); overflow:hidden; max-width:1160px; margin:0 auto; box-shadow:0 20px 60px rgba(0,0,0,0.55); }
+
+/* Callout bar */
+.callout-bar { background:var(--moss); display:flex; flex-wrap:wrap; border-bottom:1px solid rgba(200,146,58,0.2); }
+.co { flex:1; min-width:120px; padding:10px 14px; border-right:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; gap:8px; }
+.co:last-child { border-right:none; }
+.co-icon { font-size:17px; flex-shrink:0; }
+.co-text { font-size:10.5px; line-height:1.4; }
+.co-text strong { display:block; color:var(--gold-lt); font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+
+/* Grid section */
+.grid-section { padding:20px 18px 12px; }
+.grid-meta { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+.grid-meta-left { font-size:11px; color:var(--gold-lt); }
+.grid-meta-right { display:flex; gap:6px; align-items:center; }
+.dim-lbl { font-family:'DM Mono',monospace; font-size:11px; color:var(--sprout); letter-spacing:1px; margin-right:8px; }
+
+/* Season buttons */
+.season-btn { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px; text-transform:uppercase; padding:6px 14px; border-radius:20px; border:1.5px solid rgba(200,146,58,0.4); background:transparent; color:var(--faint); cursor:pointer; transition:all 0.2s; }
+.season-btn:hover { color:var(--cream); border-color:var(--gold); }
+.season-btn.active { background:var(--gold); color:var(--soil); border-color:var(--gold); font-weight:600; }
+.season-btn.summer-btn.active { background:#e88a6a; border-color:#e88a6a; }
+
+/* ══════════════════════════════════════════════════════
+   THE KEY LAYOUT: CSS grid (not flex) for side-by-side.
+   Grid rows always stretch both children to equal height.
+   This is what makes the tracker match the blueprint.
+══════════════════════════════════════════════════════ */
+.grid-and-tracker {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+}
+.grid-left { flex-shrink: 0; display: flex; flex-direction: column; gap: 7px; }
+
+/* The plot */
+.plot {
+  display:grid;
+  grid-template-columns:var(--LW) repeat(12, var(--CW));
+  grid-template-rows:22px repeat(4, var(--CH));
+  border:2px solid var(--gold); border-radius:10px;
+  overflow:hidden; position:relative; background:rgba(10,5,2,0.65); flex-shrink:0;
+}
+.zfill { position:absolute; top:22px; bottom:0; z-index:0; pointer-events:none; }
+.zf-sp { left:var(--LW); width:calc(3*var(--CW)); background:rgba(138,181,90,0.10); }
+.zf-su { left:calc(var(--LW)+4*var(--CW)); width:calc(5*var(--CW)); background:rgba(200,80,40,0.08); }
+.zf-cl { left:calc(var(--LW)+10*var(--CW)); right:0; background:rgba(74,127,168,0.11); }
+.zdiv  { position:absolute; top:22px; bottom:0; width:2px; z-index:2; pointer-events:none; }
+.zd1 { left:calc(var(--LW)+3*var(--CW)); background:rgba(138,181,90,0.5); }
+.zd2 { left:calc(var(--LW)+4*var(--CW)); background:rgba(200,80,40,0.4); }
+.zd3 { left:calc(var(--LW)+9*var(--CW)); background:rgba(200,80,40,0.4); }
+.zd4 { left:calc(var(--LW)+10*var(--CW)); background:rgba(74,127,168,0.5); }
+
+/* Base cells */
+.c    { border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3px 2px; text-align:center; position:relative; z-index:3; gap:2px; }
+.blank{ border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); position:relative; z-index:3; }
+.ch   { background:rgba(200,146,58,0.15); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:10px; color:var(--gold-lt); border-right:1.5px dashed var(--dash); border-bottom:2px solid rgba(200,146,58,0.45); position:relative; z-index:5; }
+.rh   { background:rgba(200,146,58,0.10); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:10px; color:var(--gold-lt); border-right:2px solid rgba(200,146,58,0.45); border-bottom:1.5px dashed var(--dash); position:relative; z-index:5; }
+.lbl  { font-size:7.5px; color:var(--dim); line-height:1.25; }
+.lbl2 { font-size:7px; color:var(--faint); font-style:italic; }
+.g2x2 { display:grid; grid-template-columns:1fr 1fr; gap:2px; width:100%; padding:4px 6px; place-items:center; }
+.g2x2 span { font-size:17px; line-height:1; }
+
+/* Tomato cell */
+.tom-c { border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); display:flex; flex-direction:column; align-items:center; justify-content:flex-start; padding:5px 3px 3px; position:relative; z-index:3; text-align:center; gap:2px; }
+.cage-lbl { font-family:'DM Mono',monospace; font-size:7px; letter-spacing:1px; text-transform:uppercase; color:var(--gold); line-height:1.2; margin-bottom:1px; }
+.tom-name { font-size:8px; color:var(--dim); line-height:1.3; }
+.row-b { position:absolute; left:6px; right:6px; top:50%; border-top:1.5px dashed rgba(200,146,58,0.3); pointer-events:none; }
+.cw { position:relative; display:flex; align-items:center; justify-content:center; width:50px; height:52px; flex-shrink:0; }
+.cw .tic { position:absolute; z-index:2; font-size:26px; }
+.csw { position:absolute; inset:0; width:100%; height:100%; }
+
+/* Pepper */
+.pep-c { border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); display:flex; flex-direction:column; align-items:center; justify-content:space-evenly; padding:5px 2px; position:relative; z-index:3; text-align:center; }
+.stk-lbl { font-size:7px; color:rgba(255,190,80,0.8); font-family:'DM Mono',monospace; letter-spacing:.5px; text-transform:uppercase; line-height:1.3; }
+.stk-line { width:2px; height:14px; background:rgba(180,130,60,0.7); border-radius:1px; margin-top:-2px; }
+
+/* Onion */
+.onion-c { border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:4px; position:relative; z-index:3; text-align:center; }
+
+/* A-frame */
+.af-c { border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:5px; position:relative; z-index:3; text-align:center; background:rgba(74,127,168,0.08); }
+.af-c::before { content:''; position:absolute; inset:0; background-image:repeating-linear-gradient(90deg,transparent,transparent 10px,rgba(74,127,168,0.12) 10px,rgba(74,127,168,0.12) 11px),repeating-linear-gradient(0deg,transparent,transparent 8px,rgba(74,127,168,0.12) 8px,rgba(74,127,168,0.12) 9px); pointer-events:none; z-index:0; }
+.af-c > * { position:relative; z-index:1; }
+
+/* Mulch / squash */
+.mulch-c { border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:5px; position:relative; z-index:3; text-align:center; background:rgba(100,60,20,0.2); }
+.sq-c { border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:4px; position:relative; z-index:3; text-align:center; background:rgba(74,127,168,0.06); }
+
+/* Zone strip */
+.zone-strip { display:flex; gap:2px; }
+.zs-gap { width:var(--LW); flex-shrink:0; }
+.zs-b { flex-shrink:0; padding:5px 4px; text-align:center; font-family:'DM Mono',monospace; font-size:8px; letter-spacing:1.5px; text-transform:uppercase; border-radius:4px; }
+.zs-sp  { width:calc(3*var(--CW)); background:rgba(138,181,90,0.14); color:var(--sprout); }
+.zs-sc  { width:calc(3*var(--CW)); background:rgba(232,138,106,0.14); color:#e88a6a; }
+.zs-gap2{ width:calc(1*var(--CW)); background:rgba(200,146,58,0.05); color:var(--faint); font-size:7px; }
+.zs-su  { width:calc(5*var(--CW)); background:rgba(200,80,40,0.12); color:#e88a6a; }
+.zs-gap3{ width:calc(1*var(--CW)); background:rgba(200,146,58,0.05); color:var(--faint); font-size:7px; }
+.zs-cl  { width:calc(2*var(--CW)); background:rgba(74,127,168,0.15); color:var(--sky-lt); }
+
+/* Summer hint */
+.su-hint { display:none; background:rgba(232,138,106,0.12); border:1px dashed rgba(232,138,106,0.4); border-radius:8px; padding:10px 14px; font-size:11px; color:#e8aa8a; line-height:1.5; }
+body.summer .su-hint { display:block; }
+
+/* ══════════════════════════════════════════════════════
+   HARVEST TRACKER PANEL
+   Sits in the right CSS grid column — same row = same height.
+   flex-direction:column + hp-body {flex:1; min-height:0; overflow-y:auto}
+   is what makes the body scroll inside a fixed panel height.
+══════════════════════════════════════════════════════ */
+.hp {
+  background:rgba(0,0,0,0.28); border:1px solid rgba(200,146,58,0.28);
+  border-radius:12px; overflow:hidden; display:flex; flex-direction:column;
+}
+.hp-head { background:rgba(200,146,58,0.15); padding:12px 14px 10px; border-bottom:1px solid rgba(200,146,58,0.22); flex-shrink:0; }
+.hp-title { font-family:'Playfair Display',serif; font-size:13px; color:var(--gold-lt); margin-bottom:3px; }
+.hp-sub   { font-family:'DM Mono',monospace; font-size:8px; letter-spacing:1.5px; text-transform:uppercase; color:var(--faint); }
+.hp-body  { flex:1; min-height:0; overflow-y:auto; padding:10px 12px; display:flex; flex-direction:column; gap:7px; scrollbar-width:thin; scrollbar-color:rgba(200,146,58,0.4) transparent; }
+.hp-body::-webkit-scrollbar { width:5px; }
+.hp-body::-webkit-scrollbar-thumb { background:rgba(200,146,58,0.4); border-radius:3px; }
+.hp-foot { flex-shrink:0; padding:9px 12px; border-top:1px solid rgba(200,146,58,0.15); font-size:9px; color:var(--faint); line-height:1.5; font-style:italic; }
+.hp-clr  { display:block; width:100%; margin-top:7px; background:rgba(200,146,58,0.12); border:1px solid rgba(200,146,58,0.3); border-radius:6px; color:var(--gold-lt); font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1px; text-transform:uppercase; padding:6px; cursor:pointer; transition:background 0.15s; }
+.hp-clr:hover { background:rgba(200,146,58,0.22); }
+.hp-row { background:rgba(255,255,255,0.03); border:1px solid rgba(200,146,58,0.12); border-radius:8px; padding:7px 9px; flex-shrink:0; }
+.hp-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:5px; gap:4px; }
+.hp-name { font-size:10px; font-weight:500; color:var(--cream); display:flex; align-items:center; gap:5px; flex:1; min-width:0; }
+.hp-name .em { font-size:14px; flex-shrink:0; }
+.hp-name span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hp-inp { background:rgba(200,146,58,0.1); border:1px solid rgba(200,146,58,0.35); border-radius:5px; color:var(--cream); font-family:'DM Mono',monospace; font-size:9px; padding:3px 5px; width:110px; flex-shrink:0; outline:none; cursor:pointer; }
+.hp-inp:focus { border-color:var(--gold); background:rgba(200,146,58,0.18); }
+.hp-inp::-webkit-calendar-picker-indicator { filter:invert(0.8) sepia(1) saturate(2) hue-rotate(5deg); cursor:pointer; }
+.hp-res { display:none; flex-direction:column; gap:2px; }
+.hp-res.on { display:flex; }
+.hp-hl  { font-family:'DM Mono',monospace; font-size:7.5px; letter-spacing:1px; text-transform:uppercase; color:var(--faint); }
+.hp-hd  { font-size:10px; color:var(--sprout); font-weight:500; line-height:1.3; }
+.hp-hd.soon { color:#F9A825; }
+.hp-hd.past { color:rgba(245,237,216,0.4); }
+.hp-badge { display:inline-block; font-family:'DM Mono',monospace; font-size:8px; padding:1px 6px; border-radius:8px; margin-top:2px; background:rgba(138,181,90,0.15); color:var(--sprout); white-space:nowrap; }
+.hp-badge.soon { background:rgba(249,168,37,0.15); color:#F9A825; }
+.hp-badge.past { background:rgba(245,237,216,0.06); color:var(--faint); }
+
+/* Below-grid sections */
+.sep { border:none; border-top:1px solid rgba(200,146,58,0.14); margin:0 18px; }
+.sec { padding:20px 18px 22px; }
+.sec-t { font-family:'Playfair Display',serif; font-size:14px; color:var(--gold-lt); margin-bottom:11px; display:flex; align-items:center; gap:8px; }
+.sec-t::after { content:''; flex:1; height:1px; background:rgba(200,146,58,0.2); }
+.dtable { width:100%; border-collapse:collapse; font-size:11.5px; }
+.dtable th { background:rgba(200,146,58,0.13); color:var(--gold-lt); font-family:'DM Mono',monospace; font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; padding:8px 10px; text-align:left; border-bottom:1px solid rgba(200,146,58,0.25); }
+.dtable td { padding:7px 10px; border-bottom:1px solid rgba(200,146,58,0.07); color:var(--cream); vertical-align:middle; line-height:1.45; }
+.dtable tr:last-child td { border-bottom:none; }
+.dtable tr:hover td { background:rgba(200,146,58,0.05); }
+.zb { display:inline-block; font-size:8px; font-family:'DM Mono',monospace; padding:2px 7px; border-radius:3px; text-transform:uppercase; letter-spacing:.5px; }
+.zb-sp { background:rgba(138,181,90,0.18); color:var(--sprout); }
+.zb-mi { background:rgba(200,146,58,0.18); color:var(--gold-lt); }
+.zb-su { background:rgba(200,80,40,0.16); color:#e88a6a; }
+.zb-tr { background:rgba(74,127,168,0.2); color:var(--sky-lt); }
+.zb-tl { background:rgba(74,127,168,0.14); color:var(--sky-lt); }
+.tn { color:var(--sprout); font-family:'DM Mono',monospace; font-size:9px; }
+.tl { color:#e88a6a; font-family:'DM Mono',monospace; font-size:9px; }
+.gp-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+.gp-card { background:rgba(0,0,0,0.25); border-radius:10px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start; border:1px solid rgba(200,146,58,0.15); }
+.gp-num { font-family:'Playfair Display',serif; font-size:28px; color:var(--gold); line-height:1; flex-shrink:0; }
+.gp-t { font-weight:500; color:var(--gold-lt); margin-bottom:3px; font-size:12px; }
+.gp-p { font-size:11px; color:var(--dim); line-height:1.5; }
+.notes { padding:14px 18px 22px; border-top:1px solid rgba(200,146,58,0.14); display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+.nc { background:rgba(0,0,0,0.22); border-left:3px solid var(--gold); border-radius:0 8px 8px 0; padding:11px 13px; }
+.nc.gr { border-left-color:var(--sprout); }
+.nc.bl { border-left-color:var(--sky); }
+.nc.or { border-left-color:#e88a6a; }
+.nc .ni { font-size:15px; margin-bottom:4px; }
+.nc .nt { font-family:'DM Mono',monospace; font-size:8px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold-lt); margin-bottom:4px; }
+.nc p   { font-size:11px; color:var(--dim); line-height:1.5; }
+/* ── WEATHER BAR ── */
+.weather-bar {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 6px 16px; padding: 8px 12px; margin-top: 6px;
+  background: rgba(0,0,0,0.2); border-radius: 10px;
+  border: 1px solid rgba(200,146,58,0.2);
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold-lt);
+  max-width: 900px; margin: 6px auto 0;
+  transition: background 0.4s, border-color 0.4s;
+}
+.weather-bar.alert {
+  background: rgba(180,30,30,0.25);
+  border-color: rgba(220,60,60,0.7);
+  animation: pulse-border 1.8s ease-in-out infinite;
+}
+@keyframes pulse-border {
+  0%,100% { border-color: rgba(220,60,60,0.7); }
+  50%      { border-color: rgba(220,60,60,0.2); }
+}
+.wb-item { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.wb-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--faint); }
+.wb-val   { font-size: 12px; color: var(--cream); font-weight: 500; }
+.wb-alert-icon { font-size: 16px; animation: spin-warn 1s linear infinite; }
+@keyframes spin-warn { 0%,100%{transform:scale(1);} 50%{transform:scale(1.25);} }
+.wb-badge {
+  font-size: 9px; font-family: 'DM Mono', monospace; padding: 2px 8px;
+  border-radius: 10px; background: rgba(74,127,168,0.2); color: var(--sky-lt);
+  border: 1px solid rgba(74,127,168,0.3); white-space: nowrap;
+}
+.wb-badge.heavy-rain { background: rgba(30,80,180,0.25); color: #90caec; border-color: rgba(60,120,220,0.4); }
+.wb-badge.frost      { background: rgba(180,220,255,0.15); color: #c0e8ff; border-color: rgba(140,200,255,0.5); }
+.wb-badge.wind       { background: rgba(255,190,50,0.15); color: #f9c74f; border-color: rgba(255,190,50,0.4); }
+.wb-badge.severe     { background: rgba(220,40,40,0.2); color: #ff8080; border-color: rgba(220,40,40,0.5); }
+
+/* ── WATERING DASHBOARD ── */
+.water-dash { padding: 12px 0 4px; }
+.wd-title { font-family: 'Playfair Display', serif; font-size: 13px; color: var(--gold-lt); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.wd-title::after { content:''; flex:1; height:1px; background:rgba(200,146,58,0.2); }
+.wd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 600px) { .wd-grid { grid-template-columns: 1fr; } }
+.wd-card {
+  background: rgba(0,0,0,0.22); border-radius: 12px;
+  border: 1px solid rgba(200,146,58,0.18); padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.wd-zone-tag {
+  display: inline-block; font-family: 'DM Mono', monospace; font-size: 8.5px;
+  letter-spacing: 1.5px; text-transform: uppercase; padding: 3px 10px;
+  border-radius: 10px; width: fit-content;
+}
+.spring-tag { background: rgba(138,181,90,0.18); color: var(--sprout); border: 1px solid rgba(138,181,90,0.3); }
+.summer-tag { background: rgba(200,80,40,0.15); color: #e88a6a; border: 1px solid rgba(200,80,40,0.3); }
+.wd-btn-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--cream); }
+.wd-guide { font-size: 11px; color: var(--dim); line-height: 1.6; }
+.wd-guide strong { color: var(--gold-lt); }
+.wd-btn {
+  padding: 11px 14px; border-radius: 8px; border: none; cursor: pointer;
+  font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px;
+  text-transform: uppercase; font-weight: 600; transition: all 0.2s;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  min-height: 44px;
+}
+.mist-btn { background: rgba(74,127,168,0.25); color: var(--sky-lt); border: 1.5px solid rgba(74,127,168,0.5); }
+.mist-btn:hover, .mist-btn:active { background: rgba(74,127,168,0.4); }
+.soak-btn { background: rgba(200,80,40,0.2); color: #e88a6a; border: 1.5px solid rgba(200,80,40,0.45); }
+.soak-btn:hover, .soak-btn:active { background: rgba(200,80,40,0.35); }
+.wd-last { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--faint); }
+.wd-last.recent { color: var(--sprout); }
+.wd-last.overdue { color: #e88a6a; }
+</style>
+<body class="spring">
+
+<div class="page-header">
+  <div class="badge">My 2026 Plot · Avon Lake Community Garden</div>
+  <h1>4&prime; &times; 12&prime; Planting Layout &amp; Strategy</h1>
+  <!-- Live weather bar — populated by JS -->
+  <div id="weather-bar" class="weather-bar">
+    <span id="weather-loading" style="font-size:11px;color:var(--faint);font-style:italic;">Loading Avon Lake weather…</span>
+  </div>
+</div>
+
+<div class="card">
+
+  <div class="callout-bar">
+    <div class="co"><div class="co-icon">☀️</div><div class="co-text"><strong>Sun</strong>South-facing · full afternoon sun</div></div>
+    <div class="co"><div class="co-icon">📅</div><div class="co-text"><strong>Safe Transplant Date</strong>Post-Mother's Day · May 10–15</div></div>
+    <div class="co"><div class="co-icon">💧</div><div class="co-text"><strong>Water Spigot</strong>Access near col 5</div></div>
+    <div class="co"><div class="co-icon">🌱</div><div class="co-text"><strong>Soil Prep</strong>Mulch + humus in cols 11–12 row 3</div></div>
+    <div class="co"><div class="co-icon">⚠️</div><div class="co-text"><strong>Rule #1</strong>Cages, stakes &amp; trellis BEFORE planting</div></div>
+  </div>
+
+  <div class="grid-section">
+    <div class="grid-meta">
+      <div class="grid-meta-left">🧭 North at top · runs East–West · south edge gets best afternoon sun</div>
+      <div class="grid-meta-right">
+        <span class="dim-lbl">4&prime; × 12&prime; · 48 sq ft</span>
+        <button class="season-btn active" id="btn-sp" onclick="setSeason('spring')">🌱 Spring</button>
+        <button class="season-btn summer-btn" id="btn-su" onclick="setSeason('summer')">☀️ Summer</button>
+      </div>
+    </div>
+
+    <div class="grid-and-tracker">
+
+      <!-- ══ LEFT: BLUEPRINT ══ -->
+      <div class="grid-left">
+
+        <div class="su-hint">✏️ <strong>Summer Succession</strong> — Cols 1–3 have swapped to hot peppers and basil. All other zones stay the same. Update plants here when you&rsquo;re ready.</div>
+
+        <div class="plot">
+          <div class="zfill zf-sp"></div>
+          <div class="zfill zf-su"></div>
+          <div class="zfill zf-cl"></div>
+          <div class="zdiv zd1"></div><div class="zdiv zd2"></div>
+          <div class="zdiv zd3"></div><div class="zdiv zd4"></div>
+
+          <!-- Column headers -->
+          <div class="ch" style="grid-column:1;grid-row:1;"></div>
+          <div class="ch" style="grid-column:2; grid-row:1;">1</div><div class="ch" style="grid-column:3; grid-row:1;">2</div>
+          <div class="ch" style="grid-column:4; grid-row:1;">3</div><div class="ch" style="grid-column:5; grid-row:1;">4</div>
+          <div class="ch" style="grid-column:6; grid-row:1;">5</div><div class="ch" style="grid-column:7; grid-row:1;">6</div>
+          <div class="ch" style="grid-column:8; grid-row:1;">7</div><div class="ch" style="grid-column:9; grid-row:1;">8</div>
+          <div class="ch" style="grid-column:10;grid-row:1;">9</div><div class="ch" style="grid-column:11;grid-row:1;">10</div>
+          <div class="ch" style="grid-column:12;grid-row:1;">11</div><div class="ch" style="grid-column:13;grid-row:1;">12</div>
+
+          <!-- Row labels -->
+          <div class="rh" style="grid-column:1;grid-row:2;">1</div>
+          <div class="rh" style="grid-column:1;grid-row:3;">2</div>
+          <div class="rh" style="grid-column:1;grid-row:4;">3</div>
+          <div class="rh" style="grid-column:1;grid-row:5;">4</div>
+
+          <!-- ═══ COL 1: SPRING=Radishes / SUMMER=Jalapeños ═══ -->
+          <!-- Radish SVG shorthand -->
+          <div class="c sp-only" style="grid-column:2;grid-row:2;padding:2px;"><div class="g2x2"><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg></div><div class="lbl">radishes</div></div>
+          <div class="c sp-only" style="grid-column:2;grid-row:3;padding:2px;"><div class="g2x2"><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg></div></div>
+          <div class="c sp-only" style="grid-column:2;grid-row:4;padding:2px;"><div class="g2x2"><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg></div></div>
+          <div class="c sp-only" style="grid-column:2;grid-row:5;padding:2px;"><div class="g2x2"><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg></div></div>
+          <!-- Summer col 1: Bush Beans (Nitrogen-fixing, replaces Radishes) -->
+          <div class="c su-only" style="grid-column:2;grid-row:2;padding:2px;"><div class="g2x2"><span>🫘</span><span>🫘</span><span>🫘</span><span>🫘</span></div><div class="lbl">bush beans<br><span style="font-size:6.5px;color:var(--faint);">9/sq ft</span></div></div>
+          <div class="c su-only" style="grid-column:2;grid-row:3;padding:2px;"><div class="g2x2"><span>🫘</span><span>🫘</span><span>🫘</span><span>🫘</span></div></div>
+          <div class="c su-only" style="grid-column:2;grid-row:4;padding:2px;"><div class="g2x2"><span>🫘</span><span>🫘</span><span>🫘</span><span>🫘</span></div></div>
+          <div class="c su-only" style="grid-column:2;grid-row:5;padding:2px;"><div class="g2x2"><span>🫘</span><span>🫘</span><span>🫘</span><span>🫘</span></div></div>
+
+          <!-- ═══ COL 2: SPRING=Spinach / SUMMER=Jalapeño Pepper ═══ -->
+          <div class="c sp-only" style="grid-column:3;grid-row:2;padding:2px;"><div class="g2x2"><span>🥬</span><span>🥬</span><span>🥬</span><span>🥬</span></div><div class="lbl">spinach</div></div>
+          <div class="c sp-only" style="grid-column:3;grid-row:3;padding:2px;"><div class="g2x2"><span>🥬</span><span>🥬</span><span>🥬</span><span>🥬</span></div></div>
+          <div class="c sp-only" style="grid-column:3;grid-row:4;padding:2px;"><div class="g2x2"><span>🥬</span><span>🥬</span><span>🥬</span><span>🥬</span></div></div>
+          <div class="c sp-only" style="grid-column:3;grid-row:5;padding:2px;"><div class="g2x2"><span>🥬</span><span>🥬</span><span>🥬</span><span>🥬</span></div></div>
+          <!-- Summer col 2: Jalapeño Pepper (1 plant/sq ft) -->
+          <div class="c su-only" style="grid-column:3;grid-row:2;padding:2px;"><div class="g2x2"><span>🌶️</span><span>🌶️</span><span>🌶️</span><span>🌶️</span></div><div class="lbl">jalapeño<br><span style="font-size:6.5px;color:var(--faint);">1 plant/sq</span></div></div>
+          <div class="c su-only" style="grid-column:3;grid-row:3;padding:2px;"><div class="g2x2"><span>🌶️</span><span>🌶️</span><span>🌶️</span><span>🌶️</span></div></div>
+          <div class="c su-only" style="grid-column:3;grid-row:4;padding:2px;"><div class="g2x2"><span>🌶️</span><span>🌶️</span><span>🌶️</span><span>🌶️</span></div></div>
+          <div class="c su-only" style="grid-column:3;grid-row:5;padding:2px;"><div class="g2x2"><span>🌶️</span><span>🌶️</span><span>🌶️</span><span>🌶️</span></div></div>
+
+          <!-- ═══ COL 3: SPRING=Baby Kale / SUMMER=Fresh Basil ═══ -->
+          <div class="c sp-only" style="grid-column:4;grid-row:2;padding:2px;"><div class="g2x2"><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg></div><div class="lbl">baby kale</div></div>
+          <div class="c sp-only" style="grid-column:4;grid-row:3;padding:2px;"><div class="g2x2"><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg></div></div>
+          <div class="c sp-only" style="grid-column:4;grid-row:4;padding:2px;"><div class="g2x2"><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg></div></div>
+          <div class="c sp-only" style="grid-column:4;grid-row:5;padding:2px;"><div class="g2x2"><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg></div></div>
+          <!-- Summer col 3: Habanero Pepper (1 plant/sq ft, replaces Kale) -->
+          <div class="c su-only" style="grid-column:4;grid-row:2;padding:2px;"><div class="g2x2"><span>🫑</span><span>🫑</span><span>🫑</span><span>🫑</span></div><div class="lbl">habanero<br><span style="font-size:6.5px;color:var(--faint);">1 plant/sq</span></div></div>
+          <div class="c su-only" style="grid-column:4;grid-row:3;padding:2px;"><div class="g2x2"><span>🫑</span><span>🫑</span><span>🫑</span><span>🫑</span></div></div>
+          <div class="c su-only" style="grid-column:4;grid-row:4;padding:2px;"><div class="g2x2"><span>🫑</span><span>🫑</span><span>🫑</span><span>🫑</span></div></div>
+          <div class="c su-only" style="grid-column:4;grid-row:5;padding:2px;"><div class="g2x2"><span>🫑</span><span>🫑</span><span>🫑</span><span>🫑</span></div></div>
+
+          <!-- ═══ COL 4: BLANK ═══ -->
+          <div class="blank" style="grid-column:5;grid-row:2;"></div><div class="blank" style="grid-column:5;grid-row:3;"></div>
+          <div class="blank" style="grid-column:5;grid-row:4;"></div><div class="blank" style="grid-column:5;grid-row:5;"></div>
+
+          <!-- ═══ COL 5: Indeterminate Tomatoes ═══ -->
+          <div class="tom-c" style="grid-column:6;grid-row:2/4;">
+            <div class="row-b"></div><div class="cage-lbl">Heavy-Duty Cage · 24"</div>
+            <div class="cw" style="width:50px;height:52px;margin:2px 0;"><svg class="csw" viewBox="0 0 52 54"><line x1="11" y1="8" x2="11" y2="48" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><line x1="26" y1="4" x2="26" y2="50" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><line x1="41" y1="8" x2="41" y2="48" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><ellipse cx="26" cy="13" rx="19" ry="6" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.5"/><ellipse cx="26" cy="30" rx="21" ry="6.5" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.5"/><ellipse cx="26" cy="47" rx="22" ry="6.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.3"/></svg><span class="tic">🍅</span></div>
+            <div class="tom-name">Indeterminate Tomato 1</div>
+          </div>
+          <div class="tom-c" style="grid-column:6;grid-row:4/6;">
+            <div class="row-b"></div><div class="cage-lbl">Heavy-Duty Cage · 24"</div>
+            <div class="cw" style="width:50px;height:52px;margin:2px 0;"><svg class="csw" viewBox="0 0 52 54"><line x1="11" y1="8" x2="11" y2="48" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><line x1="26" y1="4" x2="26" y2="50" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><line x1="41" y1="8" x2="41" y2="48" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><ellipse cx="26" cy="13" rx="19" ry="6" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.5"/><ellipse cx="26" cy="30" rx="21" ry="6.5" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.5"/><ellipse cx="26" cy="47" rx="22" ry="6.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.3"/></svg><span class="tic">🍅</span></div>
+            <div class="tom-name">Indeterminate Tomato 2</div>
+          </div>
+
+          <!-- ═══ COL 6: BLANK ═══ -->
+          <div class="blank" style="grid-column:7;grid-row:2;"></div><div class="blank" style="grid-column:7;grid-row:3;"></div>
+          <div class="blank" style="grid-column:7;grid-row:4;"></div><div class="blank" style="grid-column:7;grid-row:5;"></div>
+
+          <!-- ═══ COL 7: blank / det tomato / yellow onion ═══ -->
+          <div class="blank" style="grid-column:8;grid-row:2;"></div>
+          <div class="tom-c" style="grid-column:8;grid-row:3/5;">
+            <div class="row-b"></div><div class="cage-lbl">Cage · 24"</div>
+            <div class="cw" style="width:46px;height:48px;margin:2px 0;"><svg class="csw" viewBox="0 0 48 50"><line x1="10" y1="7" x2="10" y2="44" stroke="rgba(255,255,255,0.28)" stroke-width="1.2"/><line x1="24" y1="3" x2="24" y2="47" stroke="rgba(255,255,255,0.28)" stroke-width="1.2"/><line x1="38" y1="7" x2="38" y2="44" stroke="rgba(255,255,255,0.28)" stroke-width="1.2"/><ellipse cx="24" cy="11" rx="17" ry="5.5" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.4"/><ellipse cx="24" cy="27" rx="19" ry="6" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.4"/><ellipse cx="24" cy="42" rx="20" ry="6" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/></svg><span style="font-size:22px;position:absolute;z-index:2;">🍅</span></div>
+            <div class="tom-name">Determinate Tomato</div>
+          </div>
+          <div class="onion-c" style="grid-column:8;grid-row:5;"><span style="font-size:22px;">🧅</span><div class="lbl" style="color:var(--gold-lt);">yellow onion</div></div>
+
+          <!-- ═══ COL 8: blank/blank/blank / red onion ═══ -->
+          <div class="blank" style="grid-column:9;grid-row:2;"></div><div class="blank" style="grid-column:9;grid-row:3;"></div>
+          <div class="blank" style="grid-column:9;grid-row:4;"></div>
+          <div class="onion-c" style="grid-column:9;grid-row:5;"><svg width="24" height="26" viewBox="0 0 26 28"><ellipse cx="13" cy="16" rx="11" ry="10" fill="#7B1FA2"/><ellipse cx="13" cy="16" rx="8" ry="7.5" fill="#9C27B0"/><ellipse cx="13" cy="12" rx="5" ry="4" fill="#AB47BC"/><line x1="13" y1="6" x2="10" y2="1" stroke="#4CAF50" stroke-width="1.5"/><line x1="13" y1="6" x2="13" y2="0" stroke="#66BB6A" stroke-width="1.5"/><line x1="13" y1="6" x2="16" y2="1" stroke="#4CAF50" stroke-width="1.5"/></svg><div class="lbl" style="color:#CE93D8;">red onion</div></div>
+
+          <!-- ═══ COL 9: Peppers ═══ -->
+          <div class="pep-c" style="grid-column:10;grid-row:2;"><div class="stk-lbl">Stake</div><span style="font-size:22px;">🫑</span><div class="stk-line"></div></div>
+          <div class="pep-c" style="grid-column:10;grid-row:3/5;justify-content:center;gap:4px;"><div class="row-b"></div><div class="stk-lbl">Single Stake &amp; Soft Ties</div><span style="font-size:24px;">🫑</span><div class="stk-line" style="height:18px;"></div></div>
+          <div class="pep-c" style="grid-column:10;grid-row:5;"><div class="stk-lbl">Stake</div><span style="font-size:22px;">🫑</span><div class="stk-line"></div></div>
+
+          <!-- ═══ COL 10: BLANK ═══ -->
+          <div class="blank" style="grid-column:11;grid-row:2;"></div><div class="blank" style="grid-column:11;grid-row:3;"></div>
+          <div class="blank" style="grid-column:11;grid-row:4;"></div><div class="blank" style="grid-column:11;grid-row:5;"></div>
+
+          <!-- ═══ COLS 11-12: A-frame + Mulch + Squash ═══ -->
+          <!-- SPRING row 1: Snap Peas on north face -->
+          <div class="af-c sp-only" style="grid-column:12/14;grid-row:2;">
+            <svg width="86" height="46" viewBox="0 0 90 52"><line x1="5" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="85" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="3" y1="50" x2="87" y2="50" stroke="rgba(200,200,255,0.5)" stroke-width="1.8"/><line x1="12" y1="38" x2="78" y2="38" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><line x1="19" y1="27" x2="71" y2="27" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><text x="7" y="36" font-size="12">🫛</text><text x="60" y="28" font-size="12">🫛</text><text x="30" y="48" font-size="12">🫛</text></svg>
+            <div style="font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sky-lt);">Sugar Snap Peas</div>
+            <div style="font-size:7px;color:var(--faint);">A-frame north face · ~24 seeds</div>
+          </div>
+          <!-- SUMMER row 1: Cucumbers take over entire A-frame (snap peas done) -->
+          <div class="af-c su-only" style="grid-column:12/14;grid-row:2;">
+            <svg width="86" height="46" viewBox="0 0 90 52"><line x1="5" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="85" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="3" y1="50" x2="87" y2="50" stroke="rgba(200,200,255,0.5)" stroke-width="1.8"/><line x1="12" y1="38" x2="78" y2="38" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><line x1="19" y1="27" x2="71" y2="27" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><text x="7" y="36" font-size="13">🥒</text><text x="60" y="28" font-size="13">🥒</text><text x="30" y="48" font-size="13">🥒</text></svg>
+            <div style="font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sky-lt);">Cucumbers</div>
+            <div style="font-size:7px;color:var(--faint);">Full A-frame · 2 seeds/ft</div>
+          </div>
+          <div class="af-c" style="grid-column:12/14;grid-row:3;border-top:2px solid rgba(100,180,255,0.55);">
+            <div style="font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sky-lt);margin-bottom:3px;">Cucumbers</div>
+            <div style="display:flex;gap:6px;"><span style="font-size:20px;">🥒</span><span style="font-size:20px;">🥒</span><span style="font-size:20px;">🥒</span><span style="font-size:20px;">🥒</span></div>
+            <div style="font-size:7px;color:var(--faint);">A-frame south face · 4 plants</div>
+            <div style="position:absolute;top:3px;left:50%;transform:translateX(-50%);font-size:6.5px;color:rgba(100,180,255,0.6);font-family:'DM Mono',monospace;white-space:nowrap;z-index:2;">▲ A-FRAME RIDGE ▲</div>
+          </div>
+          <div class="mulch-c" style="grid-column:12/14;grid-row:4;"><div style="font-size:18px;">🪨🌱</div><div style="font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-lt);line-height:1.3;text-align:center;">Mulch + Humus<br>Pre-Plant Mix</div><div style="font-size:7px;color:var(--faint);text-align:center;line-height:1.3;">Amend before planting</div></div>
+          <div class="sq-c" style="grid-column:12;grid-row:5;"><div style="display:flex;gap:3px;"><span style="font-size:19px;">🥒</span><span style="font-size:19px;">🥒</span></div><div style="font-family:'DM Mono',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--sky-lt);line-height:1.3;text-align:center;">Zucchini · 2</div></div>
+          <div class="sq-c" style="grid-column:13;grid-row:5;"><div style="display:flex;gap:3px;"><svg width="17" height="25" viewBox="0 0 20 28"><ellipse cx="10" cy="16" rx="8" ry="11" fill="#F9A825"/><ellipse cx="10" cy="10" rx="4" ry="5" fill="#FBC02D"/><line x1="10" y1="5" x2="10" y2="1" stroke="#4CAF50" stroke-width="1.5"/></svg><svg width="17" height="25" viewBox="0 0 20 28"><ellipse cx="10" cy="16" rx="8" ry="11" fill="#F9A825"/><ellipse cx="10" cy="10" rx="4" ry="5" fill="#FBC02D"/><line x1="10" y1="5" x2="10" y2="1" stroke="#4CAF50" stroke-width="1.5"/></svg></div><div style="font-family:'DM Mono',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--sky-lt);line-height:1.3;text-align:center;">Yel. Squash · 2</div></div>
+
+        </div><!-- /plot -->
+
+        <!-- Zone strip -->
+        <div class="zone-strip">
+          <div class="zs-gap"></div>
+          <div class="zs-b zs-sp sp-only">Spring · Cols 1–3</div>
+          <div class="zs-b zs-sc su-only">Succession · Cols 1–3</div>
+          <div class="zs-b zs-gap2">—</div>
+          <div class="zs-b zs-su">Summer Staples · Cols 5–9</div>
+          <div class="zs-b zs-gap3">—</div>
+          <div class="zs-b zs-cl">Trellis / Trailing · 11–12</div>
+        </div>
+
+        <!-- ══ WATERING DASHBOARD — lives under the blueprint ══ -->
+        <div class="water-dash" id="water-dash">
+          <div class="wd-title">💧 Watering &amp; Health Dashboard</div>
+          <div class="wd-grid">
+            <div class="wd-card">
+              <div class="wd-zone-tag spring-tag">🌱 Spring Zone</div>
+              <div class="wd-btn-title">Surface Mist</div>
+              <div class="wd-guide">Radishes · Spinach · Kale · Onions<br>Keep soil moist like a wrung-out sponge.<br><strong>Daily</strong> — or <strong>2× daily</strong> if temp &gt; 75°F</div>
+              <button class="wd-btn mist-btn" id="log-mist" onclick="logWater('mist')">💦 Log Surface Mist</button>
+              <div class="wd-last" id="last-mist">Last mist: —</div>
+            </div>
+            <div class="wd-card">
+              <div class="wd-zone-tag summer-tag">☀️ Summer Zone</div>
+              <div class="wd-btn-title">Deep Soak</div>
+              <div class="wd-guide">Tomatoes · Peppers · Cucumbers · Squash<br>Water at the base deeply.<br><strong>2–3× per week</strong> — wait for top 1" of soil to dry</div>
+              <button class="wd-btn soak-btn" id="log-soak" onclick="logWater('soak')">🪣 Log Deep Soak</button>
+              <div class="wd-last" id="last-soak">Last soak: —</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /grid-left -->
+
+      <!-- ══ RIGHT: HARVEST TRACKER ══ -->
+      <div class="hp">
+        <div class="hp-head">
+          <div class="hp-title">🌱 Harvest Tracker</div>
+          <div class="hp-sub">Pick a planting date → see harvest window</div>
+        </div>
+        <div class="hp-body">
+          <!-- Spring-only rows -->
+          <div class="hp-row sp-only" data-min="20" data-max="30"><div class="hp-top"><div class="hp-name"><span class="em">🌰</span><span>Radishes</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row sp-only" data-min="40" data-max="50"><div class="hp-top"><div class="hp-name"><span class="em">🥬</span><span>Spinach</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row sp-only" data-min="25" data-max="35"><div class="hp-top"><div class="hp-name"><span class="em">🥬</span><span>Baby Kale</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <!-- Summer-only rows: Bush Beans / Jalapeño / Habanero / Cucumbers (trellis) -->
+          <div class="hp-row su-only" data-min="50" data-max="60"><div class="hp-top"><div class="hp-name"><span class="em">🫘</span><span>Bush Beans</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row su-only" data-min="65" data-max="80"><div class="hp-top"><div class="hp-name"><span class="em">🌶️</span><span>Jalapeños</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row su-only" data-min="75" data-max="100"><div class="hp-top"><div class="hp-name"><span class="em">🫑</span><span>Habaneros</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <!-- Shared rows (both seasons) -->
+          <div class="hp-row" data-min="100" data-max="120"><div class="hp-top"><div class="hp-name"><span class="em">🧅</span><span>Onion Sets</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row" data-min="65" data-max="85"><div class="hp-top"><div class="hp-name"><span class="em">🍅</span><span>Indet. Tomato 1</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row" data-min="65" data-max="85"><div class="hp-top"><div class="hp-name"><span class="em">🍅</span><span>Indet. Tomato 2</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row" data-min="60" data-max="75"><div class="hp-top"><div class="hp-name"><span class="em">🍅</span><span>Det. Tomato</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row" data-min="70" data-max="85"><div class="hp-top"><div class="hp-name"><span class="em">🫑</span><span>Peppers (×3)</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row sp-only" data-min="55" data-max="70"><div class="hp-top"><div class="hp-name"><span class="em">🫛</span><span>Snap Peas</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row su-only" data-min="50" data-max="65"><div class="hp-top"><div class="hp-name"><span class="em">🥒</span><span>Cucumbers (Trellis)</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row" data-min="50" data-max="65"><div class="hp-top"><div class="hp-name"><span class="em">🥒</span><span>Cucumbers</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row" data-min="45" data-max="60"><div class="hp-top"><div class="hp-name"><span class="em">🥒</span><span>Zucchini</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+          <div class="hp-row" data-min="50" data-max="60"><div class="hp-top"><div class="hp-name"><span class="em">🎃</span><span>Yellow Squash</span></div><input type="date" class="hp-inp"></div><div class="hp-res"><div class="hp-hl">Estimated Harvest</div><div class="hp-hd"></div><div class="hp-badge"></div></div></div>
+        </div>
+        <div class="hp-foot">
+          Estimates vary by variety, weather &amp; soil.
+          <button class="hp-clr" id="hp-clear">Clear All Dates</button>
+
+          <!-- Sync code — always visible -->
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(200,146,58,0.2);">
+            <div style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-lt);margin-bottom:6px;">☁️ Cloud Sync</div>
+
+            <!-- Status line -->
+            <div id="sync-status" style="font-size:9px;color:var(--faint);margin-bottom:6px;font-style:italic;">Connecting to cloud…</div>
+
+            <!-- Sync code display -->
+            <div id="sync-code-box" style="display:none;">
+              <div style="font-size:9px;color:var(--dim);margin-bottom:4px;">Your sync code — paste this on any other device:</div>
+              <div style="display:flex;gap:6px;align-items:center;">
+                <div id="sync-code-val" style="font-family:'DM Mono',monospace;font-size:8px;color:var(--gold-lt);word-break:break-all;flex:1;background:rgba(200,146,58,0.08);padding:5px 7px;border-radius:5px;border:1px solid rgba(200,146,58,0.2);line-height:1.5;"></div>
+                <button id="sync-copy-btn" style="flex-shrink:0;background:rgba(200,146,58,0.15);border:1px solid rgba(200,146,58,0.3);border-radius:5px;color:var(--gold-lt);font-family:'DM Mono',monospace;font-size:8px;padding:5px 8px;cursor:pointer;white-space:nowrap;touch-action:manipulation;">Copy</button>
+              </div>
+            </div>
+
+            <!-- Load from another device -->
+            <div style="margin-top:8px;">
+              <div style="font-size:9px;color:var(--dim);margin-bottom:4px;">On a new device — paste sync code here:</div>
+              <div style="display:flex;gap:6px;">
+                <input id="sync-input" type="text" placeholder="Paste code…" style="flex:1;min-width:0;background:rgba(200,146,58,0.08);border:1px solid rgba(200,146,58,0.25);border-radius:5px;color:var(--cream);font-family:'DM Mono',monospace;font-size:9px;padding:5px 7px;outline:none;">
+                <button id="sync-load-btn" style="flex-shrink:0;background:rgba(200,146,58,0.15);border:1px solid rgba(200,146,58,0.3);border-radius:5px;color:var(--gold-lt);font-family:'DM Mono',monospace;font-size:8px;padding:5px 8px;cursor:pointer;white-space:nowrap;touch-action:manipulation;">Load</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div><!-- /hp -->
+
+    </div><!-- /grid-and-tracker -->
+  </div><!-- /grid-section -->
+
+  <hr class="sep">
+
+  <div class="sec">
+    <div class="sec-t">Plant Reference — Seeds, Spacing &amp; Timing</div>
+    <div style="overflow-x:auto;">
+      <table class="dtable">
+        <thead><tr><th>Season</th><th>Zone</th><th>Plant</th><th>Plants / Seeds per 1′ sq</th><th>Total for Section</th><th>Timing (NE Ohio)</th></tr></thead>
+        <tbody>
+          <!-- ── SPRING rows ── -->
+          <tr class="sp-only"><td><span class="zb zb-sp">Spring</span></td><td>Col 1</td><td><strong>Radishes</strong></td><td><strong>16 Seeds</strong> (4×4 grid)</td><td>~64 Seeds</td><td><span class="tn">Now</span> (Late March/April)</td></tr>
+          <tr class="sp-only"><td><span class="zb zb-sp">Spring</span></td><td>Col 2</td><td><strong>Spinach</strong></td><td><strong>9 Seeds</strong> (3×3 grid)</td><td>~100 Seeds</td><td><span class="tn">Now</span> (Late March/April)</td></tr>
+          <tr class="sp-only"><td><span class="zb zb-sp">Spring</span></td><td>Col 3</td><td><strong>Baby Kale</strong></td><td><strong>4–9 Seeds</strong></td><td>~50 Seeds</td><td><span class="tn">Now</span> (Late March/April)</td></tr>
+          <tr class="sp-only"><td><span class="zb zb-tr">Trellis</span></td><td>Cols 11–12</td><td><strong>Sugar Snap Peas</strong></td><td><strong>8 Seeds</strong> in a line</td><td>~24 Seeds</td><td><span class="tn">Now</span> (Late March/April)</td></tr>
+          <!-- ── SUMMER succession rows ── -->
+          <tr class="su-only"><td><span class="zb" style="background:rgba(232,138,106,0.18);color:#e88a6a;">Summer</span></td><td>Col 1</td><td><strong>Bush Beans</strong> <span style="font-size:9px;color:var(--faint);">nitrogen-fixing</span></td><td><strong>9 Seeds</strong> (3×3 sq ft gardening)</td><td>~36 Seeds</td><td><span class="tl">Post-Mother's Day</span></td></tr>
+          <tr class="su-only"><td><span class="zb" style="background:rgba(232,138,106,0.18);color:#e88a6a;">Summer</span></td><td>Col 2</td><td><strong>Jalapeño Pepper</strong></td><td><strong>1 Starter Plant</strong> per sq ft</td><td>4 Plants</td><td><span class="tl">Post-Mother's Day</span></td></tr>
+          <tr class="su-only"><td><span class="zb" style="background:rgba(232,138,106,0.18);color:#e88a6a;">Summer</span></td><td>Col 3</td><td><strong>Habanero Pepper</strong></td><td><strong>1 Starter Plant</strong> per sq ft</td><td>4 Plants</td><td><span class="tl">Post-Mother's Day</span></td></tr>
+          <tr class="su-only"><td><span class="zb zb-tr">Trellis</span></td><td>Cols 11–12</td><td><strong>Cucumbers</strong> <span style="font-size:9px;color:var(--faint);">full A-frame</span></td><td><strong>2 Seeds</strong> per ft (trellised)</td><td>~16 Seeds</td><td><span class="tl">Post-Mother's Day</span></td></tr>
+          <!-- ── Shared (both seasons) ── -->
+          <tr><td><span class="zb zb-mi">Both</span></td><td>Cols 7–8</td><td><strong>Onion Sets</strong> (yellow &amp; red)</td><td><strong>9 Bulbs</strong> (3×3 grid)</td><td>~36 Bulbs</td><td><span class="tn">Now</span> (Late March/April)</td></tr>
+          <tr><td><span class="zb zb-su">Summer</span></td><td>Col 5</td><td><strong>Indeterminate Tomato</strong></td><td><strong>1 Plant</strong> per 4 sq ft</td><td>2 Plants</td><td><span class="tl">Post-Mother's Day</span></td></tr>
+          <tr><td><span class="zb zb-su">Summer</span></td><td>Col 7</td><td><strong>Determinate Tomato</strong></td><td><strong>1 Plant</strong> per 4 sq ft</td><td>1 Plant</td><td><span class="tl">Post-Mother's Day</span></td></tr>
+          <tr><td><span class="zb zb-su">Summer</span></td><td>Col 9</td><td><strong>Peppers</strong></td><td><strong>1 Plant</strong></td><td>3 Plants</td><td><span class="tl">Post-Mother's Day</span></td></tr>
+          <tr><td><span class="zb zb-tr">Trellis</span></td><td>Cols 11–12</td><td><strong>Cucumbers</strong> <span style="font-size:9px;color:var(--faint);">(spring: south face)</span></td><td><strong>2 Plants</strong> at base</td><td>4 Plants</td><td><span class="tl">Post-Mother's Day</span></td></tr>
+          <tr><td><span class="zb zb-tl">Trailing</span></td><td>Cols 11–12</td><td><strong>Squash / Zucchini</strong></td><td><strong>1 Plant</strong></td><td>2 + 2 Plants</td><td><span class="tl">Post-Mother's Day</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr class="sep">
+
+  <div class="sec" style="padding-bottom:22px;">
+    <div class="sec-t">The Game Plan — Bed Prep Before You Plant</div>
+    <div class="gp-grid">
+      <div class="gp-card"><div class="gp-num">1</div><div><div class="gp-t">Clear It</div><div class="gp-p">Hoe off any existing weeds. Get down to bare soil before you do anything else.</div></div></div>
+      <div class="gp-card"><div class="gp-num">2</div><div><div class="gp-t">Loosen It</div><div class="gp-p">Use your cultivator or hoe to break up the top 8 inches. Don't just scratch the surface.</div></div></div>
+      <div class="gp-card"><div class="gp-num">3</div><div><div class="gp-t">Amend It</div><div class="gp-p">Spread 2–3 bags of compost / planting mix over the top and rake in evenly.</div></div></div>
+      <div class="gp-card"><div class="gp-num">4</div><div><div class="gp-t">Grid It</div><div class="gp-p">Lay string or wood strips to mark your 1′×1′ squares. <strong style="color:var(--gold-lt);">Don't step on the dirt after this!</strong></div></div></div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <div class="nc"><div class="ni">🗓️</div><div class="nt">Avon Lake Last Frost</div><p>Typically May 10–15. Start cool-weather crops in late March/April. Hold warm-season transplants until after Mother's Day.</p></div>
+    <div class="nc gr"><div class="ni">🏗️</div><div class="nt">Infra First</div><p>Set all cages, the A-frame, and stakes BEFORE planting. Driving supports through roots causes serious damage.</p></div>
+    <div class="nc bl"><div class="ni">🫛🥒</div><div class="nt">A-Frame Split</div><p>Cols 11–12 row 1 = Snap Peas (north face). Cols 11–12 row 2 = Cucumbers (south face). Ridge runs between the two rows.</p></div>
+    <div class="nc or"><div class="ni">☀️</div><div class="nt">Season Toggle</div><p>Hit Summer to switch the blueprint to your succession layout. Col 1: Radishes → Bush Beans. Col 2: Spinach → Jalapeños. Col 3: Kale → Habaneros. Trellis row 1: Snap Peas → Cucumbers (full A-frame). All other zones stay the same.</p></div>
+  </div>
+
+</div><!-- /card -->
+
+<div style="text-align:center;font-family:'DM Mono',monospace;font-size:8.5px;color:rgba(245,237,216,0.2);margin-top:16px;letter-spacing:1.5px;">
+  AVON LAKE COMMUNITY GARDEN &middot; MY 4′ × 12′ PLOT &middot; ORGANIC SEASONAL PLAN &middot; 2026
+</div>
+
+<script>
+// ── SEASON TOGGLE ──
+function setSeason(s){
+  document.body.className=s;
+  document.getElementById('btn-sp').classList.toggle('active',s==='spring');
+  document.getElementById('btn-su').classList.toggle('active',s==='summer');
+}
+
+// ══════════════════════════════════════════════════
+// WEATHER SYSTEM — OpenWeatherMap zip 44012
+// ══════════════════════════════════════════════════
+(function(){
+  var OWM='ad09ad66b0c1c0cb07ae46a6a00a3158'; // OpenWeatherMap API key
+  var ZIP='44012';
+  function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
+  function badge(txt,cls){var b=document.createElement('span');b.className='wb-badge '+(cls||'');b.textContent=txt;return b;}
+  function wbItem(label,val,sub){
+    var w=document.createElement('div');w.className='wb-item';
+    w.innerHTML='<div><div class="wb-label">'+label+'</div><div class="wb-val">'+val+(sub?' <span style="font-size:9px;color:var(--faint)">'+sub+'</span>':'')+'</div></div>';
+    return w;
+  }
+  function render(c,f){
+    var bar=document.getElementById('weather-bar');
+    var temp=Math.round(c.main.temp);
+    var feels=Math.round(c.main.feels_like);
+    var desc=c.weather[0].description;
+    var wind=Math.round(c.wind.speed);
+    var gust=c.wind.gust?Math.round(c.wind.gust):wind;
+    var rainMM=(c.rain&&c.rain['1h'])?c.rain['1h']:((c.rain&&c.rain['3h'])?c.rain['3h']:0);
+    var rainIn=(rainMM*0.0393701).toFixed(2);
+    var lows=f.list.map(function(i){return i.main.temp_min;});
+    var low=Math.round(Math.min.apply(null,lows));
+    var sevWords=['thunderstorm','tornado','severe'];
+    var hasSev=f.list.some(function(i){return sevWords.some(function(w){return i.weather[0].description.toLowerCase().indexOf(w)>-1;});});
+    var isFrost=low<=36, isWind=gust>30, isAlert=isFrost||isWind||hasSev;
+    bar.innerHTML='';
+    if(isAlert){bar.classList.add('alert');var ic=document.createElement('span');ic.className='wb-alert-icon';ic.textContent='⚠️';bar.appendChild(ic);}
+    else{bar.classList.remove('alert');}
+    bar.appendChild(wbItem('Avon Lake',temp+'°F','feels '+feels+'°F'));
+    var lowEl=wbItem('Low Tonight',low+'°F','');
+    if(isFrost)lowEl.appendChild(badge('❄️ Frost Warning','frost'));
+    bar.appendChild(lowEl);
+    var wEl=wbItem('Wind',wind+' mph','gusts '+gust+' mph');
+    if(isWind)wEl.appendChild(badge('💨 High Wind Warning','wind'));
+    bar.appendChild(wEl);
+    var rEl=wbItem('Rain',rainIn+'"','recent');
+    if(parseFloat(rainIn)>=0.5)rEl.appendChild(badge('🌧 Heavy Rain: Skip Watering','heavy-rain'));
+    bar.appendChild(rEl);
+    var cEl=wbItem('Conditions',cap(desc),'');
+    if(hasSev)cEl.appendChild(badge('⛈ Severe Weather Ahead','severe'));
+    bar.appendChild(cEl);
+  }
+  function load(){
+    var cur=fetch('https://api.openweathermap.org/data/2.5/weather?zip='+ZIP+',us&appid='+OWM+'&units=imperial').then(function(r){return r.json();});
+    var fct=fetch('https://api.openweathermap.org/data/2.5/forecast?zip='+ZIP+',us&appid='+OWM+'&units=imperial&cnt=8').then(function(r){return r.json();});
+    Promise.all([cur,fct]).then(function(r){render(r[0],r[1]);}).catch(function(){document.getElementById('weather-loading').textContent='⚠️ Weather unavailable';});
+  }
+  load();
+  setInterval(load,15*60*1000);
+})();
+
+// ══════════════════════════════════════════════════
+// DATA · HARVEST TRACKER · WATERING · CLOUD SYNC
+// with Pre-Flight Conflict Check before every save
+// ══════════════════════════════════════════════════
+(function(){
+  var API_KEY  = '$2a$10$D1ygVBcKY4fGw8Pczvn.oeVxrnsX2hPiP7rTZxErMZb/AV5a9cQrO'; // JSONBin key
+  var STORE_KEY= 'garden2026_bin_id';
+  var binId    = localStorage.getItem(STORE_KEY);
+  var saveTimer= null;
+
+  // ── loadedAt: the _savedAt timestamp we read from the cloud on last load.
+  //    Every save embeds a fresh _savedAt into the payload.
+  //    Conflict = server's _savedAt is newer than ours → someone else saved.
+  //    NOTE: We do NOT use JSONBin's metadata.createdAt — that never changes
+  //    after the bin is first created, so it cannot detect updates.
+  var loadedAt = 0;
+
+  // ── HARVEST DATE DISPLAY ──────────────────────────
+  var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function addD(d,n){var r=new Date(d);r.setDate(r.getDate()+n);return r;}
+  function fmt(d){return M[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();}
+  function dfn(d){var t=new Date();t.setHours(0,0,0,0);return Math.round((d-t)/86400000);}
+
+  function upd(row){
+    var inp=row.querySelector('.hp-inp'), res=row.querySelector('.hp-res');
+    var hd =row.querySelector('.hp-hd'),  bd =row.querySelector('.hp-badge');
+    var mn =+row.dataset.min, mx=+row.dataset.max;
+    if(!inp.value){res.classList.remove('on');return;}
+    var p=inp.value.split('-').map(Number);
+    var pl=new Date(p[0],p[1]-1,p[2]);
+    var s=addD(pl,mn), e=addD(pl,mx);
+    var dt=dfn(s), today=new Date(); today.setHours(0,0,0,0);
+    var past=e<today, soon=!past&&dt<=14;
+    hd.textContent=fmt(s)+' – '+fmt(e);
+    hd.className='hp-hd'+(past?' past':soon?' soon':'');
+    if(past)      { bd.textContent='Season passed';               bd.className='hp-badge past'; }
+    else if(dt<=0){ bd.textContent='Ready to harvest!';           bd.className='hp-badge'; }
+    else          { bd.textContent=dt+' days until harvest window'; bd.className='hp-badge'+(soon?' soon':''); }
+    res.classList.add('on');
+  }
+
+  // ── PAYLOAD HELPERS ──────────────────────────────
+  function getDates(){
+    var d={};
+    document.querySelectorAll('.hp-row').forEach(function(r,i){
+      d['r'+i]=r.querySelector('.hp-inp').value||'';
+    });
+    return d;
+  }
+
+  function setDates(d){
+    document.querySelectorAll('.hp-row').forEach(function(r,i){
+      var v=d['r'+i]||'';
+      if(v){ r.querySelector('.hp-inp').value=v; upd(r); }
+    });
+  }
+
+  function getWater(){
+    return {
+      mist: localStorage.getItem('garden_last_mist')||null,
+      soak: localStorage.getItem('garden_last_soak')||null
+    };
+  }
+
+  function getPayload(){
+    // _savedAt is our own timestamp embedded in the data — this is what
+    // the conflict check reads, not JSONBin's metadata.createdAt.
+    return Object.assign({}, getDates(), {
+      _mist:    getWater().mist,
+      _soak:    getWater().soak,
+      _savedAt: Date.now()   // ← the key to conflict detection
+    });
+  }
+
+  // ── WATERING DISPLAY ─────────────────────────────
+  function timeAgo(iso){
+    if(!iso) return '—';
+    var h=(Date.now()-new Date(iso))/3600000;
+    if(h<1)  return 'Less than an hour ago';
+    if(h<24) return Math.round(h)+' hours ago';
+    return Math.round(h/24)+' days ago';
+  }
+
+  function updateWaterDisplay(){
+    var w=getWater();
+    var mEl=document.getElementById('last-mist');
+    var sEl=document.getElementById('last-soak');
+    if(mEl){
+      var mh=w.mist?(Date.now()-new Date(w.mist))/3600000:999;
+      mEl.textContent='Last mist: '+timeAgo(w.mist);
+      mEl.className='wd-last'+(mh<3?' recent':mh>24?' overdue':'');
+    }
+    if(sEl){
+      var sh=w.soak?(Date.now()-new Date(w.soak))/3600000:999;
+      sEl.textContent='Last soak: '+timeAgo(w.soak);
+      sEl.className='wd-last'+(sh<6?' recent':sh>72?' overdue':'');
+    }
+  }
+
+  window.logWater=function(type){
+    var now=new Date().toISOString();
+    localStorage.setItem(type==='mist'?'garden_last_mist':'garden_last_soak', now);
+    updateWaterDisplay();
+    saveToBin();
+    var btn=document.getElementById('log-'+type);
+    if(btn){
+      btn.textContent=type==='mist'?'✅ Misted!':'✅ Soaked!';
+      setTimeout(function(){
+        btn.textContent=type==='mist'?'💦 Log Surface Mist':'🪣 Log Deep Soak';
+      },2000);
+    }
+  };
+
+  // ── STATUS + SYNC CODE UI ────────────────────────
+  function setStatus(msg){
+    var el=document.getElementById('sync-status');
+    if(el) el.textContent=msg;
+  }
+
+  function showCode(id){
+    var el =document.getElementById('sync-code-val');
+    var box=document.getElementById('sync-code-box');
+    if(el)  el.textContent=id;
+    if(box) box.style.display='block';
+    setStatus('✅ Synced — '+new Date().toLocaleTimeString());
+  }
+
+  // ── saveToBin — Pre-Flight Conflict Check ────────
+  //
+  //  The root cause of the old broken check:
+  //  JSONBin's metadata.createdAt is set ONCE when the bin is first
+  //  created and never changes on PUT — so it can never be "newer."
+  //
+  //  The fix: embed _savedAt in the data itself. GET the latest record,
+  //  read _savedAt from it, compare to our local loadedAt baseline.
+  //  If server._savedAt > loadedAt → someone saved after us → block.
+  //
+  function saveToBin(){
+    if(!binId) return;
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(function(){
+
+      setStatus('Checking for conflicts…');
+
+      // Step 1: GET the latest record (not /meta — that has stale createdAt)
+      fetch('https://api.jsonbin.io/v3/b/'+binId+'/latest', {
+        headers: { 'X-Access-Key': API_KEY }
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+
+        // Step 2: Read _savedAt from inside the record
+        var serverSavedAt = (data.record && data.record._savedAt) ? data.record._savedAt : 0;
+
+        // Step 3: Conflict check — is server newer than when we loaded?
+        if(serverSavedAt > loadedAt){
+          alert(
+            'CONFLICT DETECTED: A newer update exists on the server.\n\n' +
+            'Please refresh the page to sync the latest data before saving.\n\n' +
+            '(Your unsaved changes are still visible — refresh will load the newer cloud version.)'
+          );
+          setStatus('⛔ Save blocked — refresh to sync first');
+          return; // Do NOT overwrite
+        }
+
+        // Step 4: No conflict — safe to PUT
+        fetch('https://api.jsonbin.io/v3/b/'+binId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Access-Key': API_KEY },
+          body: JSON.stringify(getPayload())  // includes fresh _savedAt
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(saved){
+          // Step 5: Update our baseline to the _savedAt we just wrote
+          loadedAt = (saved.record && saved.record._savedAt) ? saved.record._savedAt : Date.now();
+          showCode(binId);
+        })
+        .catch(function(){
+          setStatus('⚠️ Save failed — check your connection');
+        });
+
+      })
+      .catch(function(){
+        // Network error on preflight — save anyway (offline fallback)
+        fetch('https://api.jsonbin.io/v3/b/'+binId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Access-Key': API_KEY },
+          body: JSON.stringify(getPayload())
+        })
+        .then(function(){ loadedAt=Date.now(); showCode(binId); })
+        .catch(function(){ setStatus('⚠️ Save failed — check your connection'); });
+      });
+
+    }, 800);
+  }
+
+  // ── LOAD FROM BIN ────────────────────────────────
+  function loadFromBin(id){
+    setStatus('Loading saved data…');
+    return fetch('https://api.jsonbin.io/v3/b/'+id+'/latest', {
+      headers: { 'X-Access-Key': API_KEY }
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data.record){
+        setDates(data.record);
+        if(data.record._mist) localStorage.setItem('garden_last_mist', data.record._mist);
+        if(data.record._soak) localStorage.setItem('garden_last_soak', data.record._soak);
+        // Set baseline to the _savedAt stored in the record, not Date.now()
+        // This way if two devices load at different times, we compare apples to apples
+        loadedAt = data.record._savedAt || Date.now();
+        updateWaterDisplay();
+      } else {
+        loadedAt = Date.now();
+      }
+      showCode(id);
+    })
+    .catch(function(){
+      setStatus('Creating new save…');
+      binId=null;
+      localStorage.removeItem(STORE_KEY);
+      createBin();
+    });
+  }
+
+  // ── CREATE NEW BIN ───────────────────────────────
+  function createBin(){
+    setStatus('Creating cloud save…');
+    fetch('https://api.jsonbin.io/v3/b', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Access-Key': API_KEY, 'X-Bin-Name': 'garden2026' },
+      body: JSON.stringify(getPayload())
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data.metadata && data.metadata.id){
+        binId=data.metadata.id;
+        localStorage.setItem(STORE_KEY, binId);
+        loadedAt=Date.now();
+        showCode(binId);
+      } else {
+        setStatus('⚠️ Could not connect — check API key');
+      }
+    })
+    .catch(function(){
+      setStatus('⚠️ Network error — try refreshing');
+    });
+  }
+
+  // ── INIT ─────────────────────────────────────────
+  updateWaterDisplay();
+  setInterval(updateWaterDisplay, 60000);
+  if(binId){ loadFromBin(binId); } else { createBin(); }
+
+  // Wire date inputs — with change confirmation if value already exists
+  document.querySelectorAll('.hp-row').forEach(function(r){
+    var inp = r.querySelector('.hp-inp');
+    var prev = ''; // track value before user opens picker
+
+    // Capture the current value when the user focuses the input
+    inp.addEventListener('focus', function(){
+      prev = this.value;
+    });
+
+    inp.addEventListener('change', function(){
+      var newVal = this.value;
+      // If there was already a date set, confirm the change
+      if(prev && prev !== newVal){
+        var ok = window.confirm(
+          'Are you sure you want to change this date?\n\nThis will update your harvest schedule.'
+        );
+        if(!ok){
+          // Revert to original value — no save triggered
+          this.value = prev;
+          return;
+        }
+      }
+      prev = newVal;
+      upd(r);
+      saveToBin();
+    });
+  });
+
+  // Clear all — with strong confirmation
+  document.getElementById('hp-clear').addEventListener('click', function(){
+    var ok = window.confirm(
+      '🚨 CAUTION: This will wipe all recorded harvest data and sync codes.\n\nAre you sure you want to proceed?'
+    );
+    if(!ok) return;
+    document.querySelectorAll('.hp-row').forEach(function(r){
+      r.querySelector('.hp-inp').value='';
+      r.querySelector('.hp-res').classList.remove('on');
+    });
+    saveToBin();
+  });
+
+  // Copy sync code
+  document.getElementById('sync-copy-btn').addEventListener('click', function(){
+    var code=document.getElementById('sync-code-val').textContent;
+    navigator.clipboard.writeText(code).then(function(){
+      document.getElementById('sync-copy-btn').textContent='Copied!';
+      setTimeout(function(){ document.getElementById('sync-copy-btn').textContent='Copy'; }, 2000);
+    });
+  });
+
+  // Load from another device
+  document.getElementById('sync-load-btn').addEventListener('click', function(){
+    var code=document.getElementById('sync-input').value.trim();
+    if(!code) return;
+    binId=code;
+    localStorage.setItem(STORE_KEY, code);
+    loadFromBin(code);
+    document.getElementById('sync-input').value='';
+  });
+
+})();
+</script>
+</body>
+</html>

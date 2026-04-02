@@ -1,0 +1,66 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2868
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\margl1440\margr1440\vieww13960\viewh11080\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 # \uc0\u55356 \u57151  Garden OS: Precision Horticulture Dashboard\
+**A Cloud-Synced, API-Driven Management System for High-Yield Urban Gardening.**\
+\
+![Project Status](https://img.shields.io/badge/Status-Production--Ready-success)\
+![Platform](https://img.shields.io/badge/Platform-Web--Mobile-blue)\
+![License](https://img.shields.io/badge/License-MIT-green)\
+\
+## \uc0\u55357 \u56534  Overview\
+**Garden OS** is a single-page application (SPA) designed to solve the data-fragmentation issues inherent in multi-user garden management. Built specifically for the micro-climates of the Great Lakes region (Avon Lake, OH), the system integrates real-time environmental telemetry with a persistent NoSQL state-engine.\
+\
+It transforms a standard 4'x12' vegetable plot into a monitored asset, allowing multiple stakeholders to coordinate watering schedules and harvest timelines without data collisions.\
+\
+---\
+\
+## \uc0\u55356 \u57303  System Architecture\
+\
+The application operates as a thin-client interface that orchestrates three primary services:\
+\
+1.  **Telemetry (OpenWeatherMap API):** Pulls hyper-local weather data every 10 minutes to calculate "Frost Risk" and "High Wind" status alerts.\
+2.  **State Persistence (JSONBin.io):** A NoSQL JSON store that acts as the global "source of truth" for cross-device synchronization.\
+3.  **Deployment (Netlify):** Global CDN hosting for high-speed mobile access and SSL-secured data transmission.\
+\
+---\
+\
+## \uc0\u55357 \u57056  Key Technical Features\
+\
+### 1. Conflict-Aware Synchronization (Anti-Race Condition)\
+To prevent data loss when multiple users (e.g., Phone vs. Desktop) attempt to update the state simultaneously, the system implements a **Timestamp Handshake**:\
+* **Local State:** Tracks the `loadedAt` epoch when the session begins.\
+* **Remote State:** Performs a `GET` request to verify the server's `metadata.createdAt` before every `PUT` operation.\
+* **Logic:** If `Server Timestamp > Local Session Timestamp`, the save is aborted and a "Conflict Detected" alert is triggered, requiring a manual sync.\
+\
+### 2. Environmental Alert Logic\
+The UI dynamically reacts to environmental thresholds using localized telemetry:\
+* **Frost Alert:** Triggered if overnight lows are predicted $\\le$ 36\'b0F.\
+* **Wind Alert:** Triggered if wind gusts exceed 30 mph (critical for trellis-supported crops).\
+* **Pulse UI:** The global header switches to a "Critical Red" pulse during active alert states to ensure operator awareness.\
+\
+### 3. Mobile-Optimized 12-Column Grid\
+The blueprint utilizes a specialized **Horizontal Scroll + Flex-Stack** layout optimized for modern devices (iPhone 17 Pro Max):\
+* **Desktop:** Side-by-side view of Plot Blueprint and Harvest Tracker.\
+* **Mobile:** Auto-stacks sections vertically with high-contrast (1.5px) grid lines for visibility in direct sunlight.\
+\
+---\
+\
+## \uc0\u9881 \u65039  Setup & Deployment\
+\
+### 1. Requirements\
+* A **JSONBin.io** Master Key (for database read/write permissions).\
+* An **OpenWeatherMap** API Key (One Call 3.0 subscription enabled).\
+\
+### 2. Configuration\
+Locate the `/* \uc0\u9472 \u9472  CONFIG \u9472 \u9472  */` section at the base of the HTML file and populate your unique credentials:\
+\
+```javascript\
+const BIN_KEY = 'YOUR_SECRET_KEY';      // JSONBin Master Key\
+const WEATHER_KEY = 'YOUR_API_KEY';      // OpenWeatherMap Key\
+const LAT = '41.50';                     // Latitude (Avon Lake)\
+const LON = '-82.02';                    // Longitude (Avon Lake)}
