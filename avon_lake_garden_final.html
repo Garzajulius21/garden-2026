@@ -399,6 +399,50 @@ body.summer .su-hint { display:block; }
 }
 .plant-search-divider::before,
 .plant-search-divider::after { content: ''; flex: 1; height: 1px; background: rgba(200,146,58,0.2); }
+
+/* ── HARVEST LOG ── */
+.hl-form { display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; margin-bottom:18px; }
+.hl-field { display:flex; flex-direction:column; gap:4px; }
+.hl-label { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--faint); }
+.hl-input {
+  background:rgba(200,146,58,0.1); border:1px solid rgba(200,146,58,0.3);
+  border-radius:6px; color:var(--cream); font-family:'DM Sans',sans-serif;
+  font-size:12px; padding:6px 9px; outline:none; min-width:0;
+}
+.hl-input:focus { border-color:var(--gold); background:rgba(200,146,58,0.18); }
+.hl-input::-webkit-calendar-picker-indicator { filter:invert(0.7) sepia(1) saturate(2) hue-rotate(5deg); }
+.hl-btn {
+  padding:7px 16px; border-radius:6px; border:none; cursor:pointer;
+  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px;
+  text-transform:uppercase; font-weight:600; transition:all 0.2s;
+  background:var(--moss); color:var(--sprout); min-height:34px;
+}
+.hl-btn:hover { background:rgba(61,90,44,0.9); }
+.hl-table { width:100%; border-collapse:collapse; font-size:11.5px; margin-bottom:18px; }
+.hl-table th { background:rgba(200,146,58,0.1); color:var(--gold-lt); font-family:'DM Mono',monospace; font-size:8.5px; letter-spacing:1.5px; text-transform:uppercase; padding:7px 10px; text-align:left; border-bottom:1px solid rgba(200,146,58,0.2); }
+.hl-table td { padding:7px 10px; border-bottom:1px solid rgba(200,146,58,0.07); color:var(--cream); vertical-align:middle; }
+.hl-table tr:last-child td { border-bottom:none; }
+.hl-table tr:hover td { background:rgba(200,146,58,0.04); }
+.hl-del { background:none; border:none; color:rgba(245,237,216,0.25); cursor:pointer; font-size:12px; padding:2px 4px; transition:color 0.15s; }
+.hl-del:hover { color:#ff7b7b; }
+.hl-empty { text-align:center; padding:20px; color:var(--faint); font-size:12px; font-style:italic; }
+.hl-totals { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin-bottom:18px; }
+.hl-total-card {
+  background:rgba(0,0,0,0.2); border:1px solid rgba(200,146,58,0.15);
+  border-radius:10px; padding:12px 14px;
+}
+.hl-total-name { font-size:12px; font-weight:500; color:var(--cream); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.hl-total-val { font-family:'DM Mono',monospace; font-size:11px; color:var(--gold-lt); margin-bottom:5px; }
+.hl-bar-wrap { height:6px; background:rgba(200,146,58,0.12); border-radius:3px; overflow:hidden; }
+.hl-bar { height:100%; background:var(--sprout); border-radius:3px; transition:width 0.4s ease; }
+.hl-export-row { display:flex; justify-content:flex-end; margin-top:6px; }
+.hl-export-btn {
+  padding:6px 14px; border-radius:6px; border:1px solid rgba(138,181,90,0.35);
+  background:rgba(138,181,90,0.08); color:var(--sprout);
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1px;
+  text-transform:uppercase; cursor:pointer; transition:all 0.15s;
+}
+.hl-export-btn:hover { background:rgba(138,181,90,0.15); }
 </style>
 <body class="spring">
 
@@ -571,6 +615,60 @@ body.summer .su-hint { display:block; }
 
     </div><!-- /grid-and-tracker -->
   </div><!-- /grid-section -->
+
+  <hr class="sep">
+
+  <div class="sec" id="harvest-log-sec">
+    <div class="sec-t">🌾 Harvest Log</div>
+
+    <!-- Log form -->
+    <form id="hl-form" onsubmit="logHarvest(event)" class="hl-form">
+      <div class="hl-field" style="flex:2;min-width:130px;">
+        <span class="hl-label">Plant</span>
+        <input id="hl-plant" class="hl-input" type="text" placeholder="e.g. Tomato" list="hl-plant-list" required autocomplete="off" />
+        <datalist id="hl-plant-list"></datalist>
+      </div>
+      <div class="hl-field" style="flex:1;min-width:100px;">
+        <span class="hl-label">Emoji</span>
+        <input id="hl-emoji" class="hl-input" type="text" placeholder="🍅" maxlength="4" style="font-size:16px;width:60px;" />
+      </div>
+      <div class="hl-field" style="flex:1;min-width:80px;">
+        <span class="hl-label">Date</span>
+        <input id="hl-date" class="hl-input" type="date" required />
+      </div>
+      <div class="hl-field" style="width:80px;">
+        <span class="hl-label">Qty</span>
+        <input id="hl-qty" class="hl-input" type="number" min="0.1" step="0.1" placeholder="1" required style="width:80px;" />
+      </div>
+      <div class="hl-field" style="width:80px;">
+        <span class="hl-label">Unit</span>
+        <select id="hl-unit" class="hl-input" style="width:80px;background:rgba(44,26,14,0.95);">
+          <option value="count">count</option>
+          <option value="lbs">lbs</option>
+          <option value="oz">oz</option>
+          <option value="kg">kg</option>
+          <option value="g">g</option>
+          <option value="bunch">bunch</option>
+        </select>
+      </div>
+      <div class="hl-field" style="flex:3;min-width:120px;">
+        <span class="hl-label">Notes</span>
+        <input id="hl-notes" class="hl-input" type="text" placeholder="Optional notes" />
+      </div>
+      <button type="submit" class="hl-btn">+ Log</button>
+    </form>
+
+    <!-- Yield summary cards -->
+    <div id="hl-totals" class="hl-totals"></div>
+
+    <!-- History table -->
+    <div id="hl-history"></div>
+
+    <!-- Export row -->
+    <div class="hl-export-row">
+      <button class="hl-export-btn" onclick="exportHarvestCSV()">↓ Export Season CSV</button>
+    </div>
+  </div>
 
   <hr class="sep">
 
@@ -766,10 +864,11 @@ function setSeason(s){
     // _savedAt is our own timestamp embedded in the data — this is what
     // the conflict check reads, not JSONBin's metadata.createdAt.
     return Object.assign({}, getDates(), {
-      _mist:    getWater().mist,
-      _soak:    getWater().soak,
-      _savedAt: Date.now(),  // ← the key to conflict detection
-      _state:   window._state   // full beds state replaces _plants
+      _mist:     getWater().mist,
+      _soak:     getWater().soak,
+      _savedAt:  Date.now(),  // ← the key to conflict detection
+      _state:    window._state,   // full beds state replaces _plants
+      _harvests: window._harvests
     });
   }
 
@@ -924,6 +1023,10 @@ function setSeason(s){
           if(window.renderBedTabs) window.renderBedTabs();
           if(window.updateGridDimensions) window.updateGridDimensions();
           if(window.renderGrid) window.renderGrid();
+        }
+        if(data.record._harvests && Array.isArray(data.record._harvests)){
+          window._harvests = data.record._harvests;
+          if(window._renderHarvests) window._renderHarvests();
         }
       } else {
         loadedAt = Date.now();
@@ -1742,6 +1845,176 @@ var DEFAULT_PLANTS = [
   // Init
   updateBtn();
   if (isEnabled()) scheduleEveningCheck();
+})();
+
+// ══════════════════════════════════════════════════
+// HARVEST LOG
+// ══════════════════════════════════════════════════
+(function(){
+
+  // ── State ──────────────────────────────────────
+  window._harvests = []; // array of {id, date, plant, emoji, qty, unit, notes}
+
+  // ── Set today's date as default ─────────────────
+  (function(){
+    var d = document.getElementById('hl-date');
+    if (d) d.value = new Date().toISOString().slice(0,10);
+  })();
+
+  // ── Populate plant autocomplete from active beds ─
+  function refreshPlantList() {
+    var dl = document.getElementById('hl-plant-list');
+    if (!dl) return;
+    var names = {};
+    if (window._state && window._state.beds) {
+      window._state.beds.forEach(function(bed) {
+        (bed.plants || []).forEach(function(p) {
+          if (p.name) names[p.name] = p.emoji || '';
+        });
+      });
+    }
+    dl.innerHTML = Object.keys(names).map(function(n) {
+      return '<option value="'+n+'">';
+    }).join('');
+    // Auto-fill emoji when plant name matches
+    var plantInput = document.getElementById('hl-plant');
+    if (plantInput && !plantInput._wired) {
+      plantInput.addEventListener('input', function() {
+        var match = Object.keys(names).filter(function(n) { return n.toLowerCase() === plantInput.value.toLowerCase(); })[0];
+        if (match) {
+          var ej = document.getElementById('hl-emoji');
+          if (ej && !ej.value) ej.value = names[match];
+        }
+      });
+      plantInput._wired = true;
+    }
+  }
+
+  // ── Render totals ───────────────────────────────
+  function renderTotals() {
+    var el = document.getElementById('hl-totals');
+    if (!el) return;
+    if (window._harvests.length === 0) { el.innerHTML = ''; return; }
+
+    // Group by plant
+    var groups = {};
+    window._harvests.forEach(function(h) {
+      if (!groups[h.plant]) groups[h.plant] = { emoji: h.emoji, entries: [] };
+      groups[h.plant].entries.push(h);
+    });
+
+    // Build summary per plant — show count of logs + total qty if same unit
+    var cards = Object.keys(groups).map(function(plant) {
+      var g = groups[plant];
+      var entries = g.entries;
+      // Try to sum if all same unit (ES5-compatible unique filter)
+      var units = entries.map(function(e){return e.unit;}).filter(function(v,i,a){return a.indexOf(v)===i;});
+      var totalStr;
+      if (units.length === 1) {
+        var sum = entries.reduce(function(a,b){ return a + parseFloat(b.qty); }, 0);
+        totalStr = (Math.round(sum * 10) / 10) + ' ' + units[0];
+      } else {
+        totalStr = entries.length + ' harvest' + (entries.length !== 1 ? 's' : '');
+      }
+      return { plant: plant, emoji: g.emoji, total: totalStr, count: entries.length };
+    });
+
+    // Max count for bar scaling
+    var maxCount = Math.max.apply(null, cards.map(function(c){ return c.count; }));
+
+    el.innerHTML = cards.map(function(c) {
+      var pct = maxCount > 0 ? Math.round((c.count / maxCount) * 100) : 0;
+      return '<div class="hl-total-card">' +
+        '<div class="hl-total-name"><span style="font-size:18px;">'+(c.emoji||'🌱')+'</span>'+c.plant+'</div>' +
+        '<div class="hl-total-val">'+c.total+'</div>' +
+        '<div class="hl-bar-wrap"><div class="hl-bar" style="width:'+pct+'%"></div></div>' +
+        '</div>';
+    }).join('');
+  }
+
+  // ── Render history table ────────────────────────
+  function renderHistory() {
+    var el = document.getElementById('hl-history');
+    if (!el) return;
+    if (window._harvests.length === 0) {
+      el.innerHTML = '<div class="hl-empty">No harvests logged yet — use the form above to record your first harvest.</div>';
+      return;
+    }
+    // Sort newest first
+    var sorted = window._harvests.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+    el.innerHTML = '<table class="hl-table">' +
+      '<thead><tr><th>Date</th><th>Plant</th><th>Qty</th><th>Notes</th><th></th></tr></thead>' +
+      '<tbody>' +
+      sorted.map(function(h) {
+        var d = new Date(h.date + 'T00:00:00');
+        var dateStr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()] + ' ' + d.getDate();
+        return '<tr>' +
+          '<td style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--gold-lt);white-space:nowrap;">'+dateStr+'</td>' +
+          '<td><span style="font-size:15px;margin-right:5px;">'+(h.emoji||'🌱')+'</span>'+h.plant+'</td>' +
+          '<td style="font-family:\'DM Mono\',monospace;font-size:11px;white-space:nowrap;">'+h.qty+' '+h.unit+'</td>' +
+          '<td style="color:var(--dim);font-size:11px;">'+(h.notes||'—')+'</td>' +
+          '<td><button class="hl-del" onclick="deleteHarvest(\''+h.id+'\')" title="Delete">✕</button></td>' +
+          '</tr>';
+      }).join('') +
+      '</tbody></table>';
+  }
+
+  window._renderHarvests = function() {
+    refreshPlantList();
+    renderTotals();
+    renderHistory();
+  };
+
+  // ── Log harvest ─────────────────────────────────
+  window.logHarvest = function(e) {
+    e.preventDefault();
+    var entry = {
+      id: 'h' + Date.now(),
+      date: document.getElementById('hl-date').value,
+      plant: document.getElementById('hl-plant').value.trim(),
+      emoji: document.getElementById('hl-emoji').value.trim(),
+      qty: parseFloat(document.getElementById('hl-qty').value) || 1,
+      unit: document.getElementById('hl-unit').value,
+      notes: document.getElementById('hl-notes').value.trim()
+    };
+    if (!entry.plant || !entry.date) return;
+    window._harvests.push(entry);
+    // Reset form fields (keep date and unit)
+    document.getElementById('hl-plant').value = '';
+    document.getElementById('hl-emoji').value = '';
+    document.getElementById('hl-qty').value = '';
+    document.getElementById('hl-notes').value = '';
+    window._renderHarvests();
+    if (window._saveToBin) window._saveToBin();
+  };
+
+  // ── Delete harvest ──────────────────────────────
+  window.deleteHarvest = function(id) {
+    window._harvests = window._harvests.filter(function(h){ return h.id !== id; });
+    window._renderHarvests();
+    if (window._saveToBin) window._saveToBin();
+  };
+
+  // ── Export CSV ──────────────────────────────────
+  window.exportHarvestCSV = function() {
+    if (window._harvests.length === 0) { alert('No harvests to export yet.'); return; }
+    var rows = [['Date','Plant','Emoji','Quantity','Unit','Notes']];
+    window._harvests.slice().sort(function(a,b){ return a.date.localeCompare(b.date); }).forEach(function(h) {
+      rows.push([h.date, h.plant, h.emoji||'', h.qty, h.unit, h.notes||'']);
+    });
+    var csv = rows.map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+    var blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    var yr = new Date().getFullYear();
+    a.href = url; a.download = 'garden-harvest-'+yr+'.csv';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  };
+
+  // ── Initial render ──────────────────────────────
+  window._renderHarvests();
+
 })();
 </script>
 
