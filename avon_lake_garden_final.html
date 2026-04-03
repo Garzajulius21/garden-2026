@@ -298,6 +298,18 @@ body.summer .su-hint { display:block; }
 .wb-badge.wind       { background: rgba(255,190,50,0.15); color: #f9c74f; border-color: rgba(255,190,50,0.4); }
 .wb-badge.severe     { background: rgba(220,40,40,0.2); color: #ff8080; border-color: rgba(220,40,40,0.5); }
 
+/* ── CELL EDIT BUTTON ── */
+.cell-edit-btn {
+  position: absolute; top: 3px; right: 3px;
+  background: rgba(0,0,0,0.5); border: 1px solid rgba(200,146,58,0.4);
+  border-radius: 3px; padding: 1px 4px; font-size: 9px;
+  cursor: pointer; opacity: 0; transition: opacity 0.15s; z-index: 10;
+  color: var(--gold-lt);
+}
+[data-pid]:hover .cell-edit-btn { opacity: 1; }
+.blank[data-pid]:hover { background: rgba(200,146,58,0.05); cursor: pointer; }
+.modal-hidden { display: none !important; }
+
 /* ── WATERING DASHBOARD ── */
 .water-dash { padding: 12px 0 4px; }
 .wd-title { font-family: 'Playfair Display', serif; font-size: 13px; color: var(--gold-lt); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
@@ -372,7 +384,7 @@ body.summer .su-hint { display:block; }
 
         <div class="su-hint">✏️ <strong>Summer Succession</strong> — Cols 1–3 have swapped to hot peppers and basil. All other zones stay the same. Update plants here when you&rsquo;re ready.</div>
 
-        <div class="plot">
+        <div class="plot" id="plot">
           <div class="zfill zf-sp"></div>
           <div class="zfill zf-su"></div>
           <div class="zfill zf-cl"></div>
@@ -394,106 +406,7 @@ body.summer .su-hint { display:block; }
           <div class="rh" style="grid-column:1;grid-row:4;">3</div>
           <div class="rh" style="grid-column:1;grid-row:5;">4</div>
 
-          <!-- ═══ COL 1: SPRING=Radishes / SUMMER=Jalapeños ═══ -->
-          <!-- Radish SVG shorthand -->
-          <div class="c sp-only" style="grid-column:2;grid-row:2;padding:2px;"><div class="g2x2"><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg></div><div class="lbl">radishes</div></div>
-          <div class="c sp-only" style="grid-column:2;grid-row:3;padding:2px;"><div class="g2x2"><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg></div></div>
-          <div class="c sp-only" style="grid-column:2;grid-row:4;padding:2px;"><div class="g2x2"><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg></div></div>
-          <div class="c sp-only" style="grid-column:2;grid-row:5;padding:2px;"><div class="g2x2"><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg><svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg></div></div>
-          <!-- Summer col 1: Bush Beans (Nitrogen-fixing, replaces Radishes) -->
-          <div class="c su-only" style="grid-column:2;grid-row:2;padding:2px;"><div class="g2x2"><span>🫘</span><span>🫘</span><span>🫘</span><span>🫘</span></div><div class="lbl">bush beans<br><span style="font-size:6.5px;color:var(--faint);">9/sq ft</span></div></div>
-          <div class="c su-only" style="grid-column:2;grid-row:3;padding:2px;"><div class="g2x2"><span>🫘</span><span>🫘</span><span>🫘</span><span>🫘</span></div></div>
-          <div class="c su-only" style="grid-column:2;grid-row:4;padding:2px;"><div class="g2x2"><span>🫘</span><span>🫘</span><span>🫘</span><span>🫘</span></div></div>
-          <div class="c su-only" style="grid-column:2;grid-row:5;padding:2px;"><div class="g2x2"><span>🫘</span><span>🫘</span><span>🫘</span><span>🫘</span></div></div>
-
-          <!-- ═══ COL 2: SPRING=Spinach / SUMMER=Jalapeño Pepper ═══ -->
-          <div class="c sp-only" style="grid-column:3;grid-row:2;padding:2px;"><div class="g2x2"><span>🥬</span><span>🥬</span><span>🥬</span><span>🥬</span></div><div class="lbl">spinach</div></div>
-          <div class="c sp-only" style="grid-column:3;grid-row:3;padding:2px;"><div class="g2x2"><span>🥬</span><span>🥬</span><span>🥬</span><span>🥬</span></div></div>
-          <div class="c sp-only" style="grid-column:3;grid-row:4;padding:2px;"><div class="g2x2"><span>🥬</span><span>🥬</span><span>🥬</span><span>🥬</span></div></div>
-          <div class="c sp-only" style="grid-column:3;grid-row:5;padding:2px;"><div class="g2x2"><span>🥬</span><span>🥬</span><span>🥬</span><span>🥬</span></div></div>
-          <!-- Summer col 2: Jalapeño Pepper (1 plant/sq ft) -->
-          <div class="c su-only" style="grid-column:3;grid-row:2;padding:2px;"><div class="g2x2"><span>🌶️</span><span>🌶️</span><span>🌶️</span><span>🌶️</span></div><div class="lbl">jalapeño<br><span style="font-size:6.5px;color:var(--faint);">1 plant/sq</span></div></div>
-          <div class="c su-only" style="grid-column:3;grid-row:3;padding:2px;"><div class="g2x2"><span>🌶️</span><span>🌶️</span><span>🌶️</span><span>🌶️</span></div></div>
-          <div class="c su-only" style="grid-column:3;grid-row:4;padding:2px;"><div class="g2x2"><span>🌶️</span><span>🌶️</span><span>🌶️</span><span>🌶️</span></div></div>
-          <div class="c su-only" style="grid-column:3;grid-row:5;padding:2px;"><div class="g2x2"><span>🌶️</span><span>🌶️</span><span>🌶️</span><span>🌶️</span></div></div>
-
-          <!-- ═══ COL 3: SPRING=Baby Kale / SUMMER=Fresh Basil ═══ -->
-          <div class="c sp-only" style="grid-column:4;grid-row:2;padding:2px;"><div class="g2x2"><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg></div><div class="lbl">baby kale</div></div>
-          <div class="c sp-only" style="grid-column:4;grid-row:3;padding:2px;"><div class="g2x2"><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg></div></div>
-          <div class="c sp-only" style="grid-column:4;grid-row:4;padding:2px;"><div class="g2x2"><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg></div></div>
-          <div class="c sp-only" style="grid-column:4;grid-row:5;padding:2px;"><div class="g2x2"><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg><svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg></div></div>
-          <!-- Summer col 3: Habanero Pepper (1 plant/sq ft, replaces Kale) -->
-          <div class="c su-only" style="grid-column:4;grid-row:2;padding:2px;"><div class="g2x2"><span>🫑</span><span>🫑</span><span>🫑</span><span>🫑</span></div><div class="lbl">habanero<br><span style="font-size:6.5px;color:var(--faint);">1 plant/sq</span></div></div>
-          <div class="c su-only" style="grid-column:4;grid-row:3;padding:2px;"><div class="g2x2"><span>🫑</span><span>🫑</span><span>🫑</span><span>🫑</span></div></div>
-          <div class="c su-only" style="grid-column:4;grid-row:4;padding:2px;"><div class="g2x2"><span>🫑</span><span>🫑</span><span>🫑</span><span>🫑</span></div></div>
-          <div class="c su-only" style="grid-column:4;grid-row:5;padding:2px;"><div class="g2x2"><span>🫑</span><span>🫑</span><span>🫑</span><span>🫑</span></div></div>
-
-          <!-- ═══ COL 4: BLANK ═══ -->
-          <div class="blank" style="grid-column:5;grid-row:2;"></div><div class="blank" style="grid-column:5;grid-row:3;"></div>
-          <div class="blank" style="grid-column:5;grid-row:4;"></div><div class="blank" style="grid-column:5;grid-row:5;"></div>
-
-          <!-- ═══ COL 5: Indeterminate Tomatoes ═══ -->
-          <div class="tom-c" style="grid-column:6;grid-row:2/4;">
-            <div class="row-b"></div><div class="cage-lbl">Heavy-Duty Cage · 24"</div>
-            <div class="cw" style="width:50px;height:52px;margin:2px 0;"><svg class="csw" viewBox="0 0 52 54"><line x1="11" y1="8" x2="11" y2="48" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><line x1="26" y1="4" x2="26" y2="50" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><line x1="41" y1="8" x2="41" y2="48" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><ellipse cx="26" cy="13" rx="19" ry="6" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.5"/><ellipse cx="26" cy="30" rx="21" ry="6.5" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.5"/><ellipse cx="26" cy="47" rx="22" ry="6.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.3"/></svg><span class="tic">🍅</span></div>
-            <div class="tom-name">Indeterminate Tomato 1</div>
-          </div>
-          <div class="tom-c" style="grid-column:6;grid-row:4/6;">
-            <div class="row-b"></div><div class="cage-lbl">Heavy-Duty Cage · 24"</div>
-            <div class="cw" style="width:50px;height:52px;margin:2px 0;"><svg class="csw" viewBox="0 0 52 54"><line x1="11" y1="8" x2="11" y2="48" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><line x1="26" y1="4" x2="26" y2="50" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><line x1="41" y1="8" x2="41" y2="48" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><ellipse cx="26" cy="13" rx="19" ry="6" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.5"/><ellipse cx="26" cy="30" rx="21" ry="6.5" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.5"/><ellipse cx="26" cy="47" rx="22" ry="6.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.3"/></svg><span class="tic">🍅</span></div>
-            <div class="tom-name">Indeterminate Tomato 2</div>
-          </div>
-
-          <!-- ═══ COL 6: BLANK ═══ -->
-          <div class="blank" style="grid-column:7;grid-row:2;"></div><div class="blank" style="grid-column:7;grid-row:3;"></div>
-          <div class="blank" style="grid-column:7;grid-row:4;"></div><div class="blank" style="grid-column:7;grid-row:5;"></div>
-
-          <!-- ═══ COL 7: blank / det tomato / yellow onion ═══ -->
-          <div class="blank" style="grid-column:8;grid-row:2;"></div>
-          <div class="tom-c" style="grid-column:8;grid-row:3/5;">
-            <div class="row-b"></div><div class="cage-lbl">Cage · 24"</div>
-            <div class="cw" style="width:46px;height:48px;margin:2px 0;"><svg class="csw" viewBox="0 0 48 50"><line x1="10" y1="7" x2="10" y2="44" stroke="rgba(255,255,255,0.28)" stroke-width="1.2"/><line x1="24" y1="3" x2="24" y2="47" stroke="rgba(255,255,255,0.28)" stroke-width="1.2"/><line x1="38" y1="7" x2="38" y2="44" stroke="rgba(255,255,255,0.28)" stroke-width="1.2"/><ellipse cx="24" cy="11" rx="17" ry="5.5" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.4"/><ellipse cx="24" cy="27" rx="19" ry="6" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.4"/><ellipse cx="24" cy="42" rx="20" ry="6" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/></svg><span style="font-size:22px;position:absolute;z-index:2;">🍅</span></div>
-            <div class="tom-name">Determinate Tomato</div>
-          </div>
-          <div class="onion-c" style="grid-column:8;grid-row:5;"><span style="font-size:22px;">🧅</span><div class="lbl" style="color:var(--gold-lt);">yellow onion</div></div>
-
-          <!-- ═══ COL 8: blank/blank/blank / red onion ═══ -->
-          <div class="blank" style="grid-column:9;grid-row:2;"></div><div class="blank" style="grid-column:9;grid-row:3;"></div>
-          <div class="blank" style="grid-column:9;grid-row:4;"></div>
-          <div class="onion-c" style="grid-column:9;grid-row:5;"><svg width="24" height="26" viewBox="0 0 26 28"><ellipse cx="13" cy="16" rx="11" ry="10" fill="#7B1FA2"/><ellipse cx="13" cy="16" rx="8" ry="7.5" fill="#9C27B0"/><ellipse cx="13" cy="12" rx="5" ry="4" fill="#AB47BC"/><line x1="13" y1="6" x2="10" y2="1" stroke="#4CAF50" stroke-width="1.5"/><line x1="13" y1="6" x2="13" y2="0" stroke="#66BB6A" stroke-width="1.5"/><line x1="13" y1="6" x2="16" y2="1" stroke="#4CAF50" stroke-width="1.5"/></svg><div class="lbl" style="color:#CE93D8;">red onion</div></div>
-
-          <!-- ═══ COL 9: Peppers ═══ -->
-          <div class="pep-c" style="grid-column:10;grid-row:2;"><div class="stk-lbl">Stake</div><span style="font-size:22px;">🫑</span><div class="stk-line"></div></div>
-          <div class="pep-c" style="grid-column:10;grid-row:3/5;justify-content:center;gap:4px;"><div class="row-b"></div><div class="stk-lbl">Single Stake &amp; Soft Ties</div><span style="font-size:24px;">🫑</span><div class="stk-line" style="height:18px;"></div></div>
-          <div class="pep-c" style="grid-column:10;grid-row:5;"><div class="stk-lbl">Stake</div><span style="font-size:22px;">🫑</span><div class="stk-line"></div></div>
-
-          <!-- ═══ COL 10: BLANK ═══ -->
-          <div class="blank" style="grid-column:11;grid-row:2;"></div><div class="blank" style="grid-column:11;grid-row:3;"></div>
-          <div class="blank" style="grid-column:11;grid-row:4;"></div><div class="blank" style="grid-column:11;grid-row:5;"></div>
-
-          <!-- ═══ COLS 11-12: A-frame + Mulch + Squash ═══ -->
-          <!-- SPRING row 1: Snap Peas on north face -->
-          <div class="af-c sp-only" style="grid-column:12/14;grid-row:2;">
-            <svg width="86" height="46" viewBox="0 0 90 52"><line x1="5" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="85" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="3" y1="50" x2="87" y2="50" stroke="rgba(200,200,255,0.5)" stroke-width="1.8"/><line x1="12" y1="38" x2="78" y2="38" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><line x1="19" y1="27" x2="71" y2="27" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><text x="7" y="36" font-size="12">🫛</text><text x="60" y="28" font-size="12">🫛</text><text x="30" y="48" font-size="12">🫛</text></svg>
-            <div style="font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sky-lt);">Sugar Snap Peas</div>
-            <div style="font-size:7px;color:var(--faint);">A-frame north face · ~24 seeds</div>
-          </div>
-          <!-- SUMMER row 1: Cucumbers take over entire A-frame (snap peas done) -->
-          <div class="af-c su-only" style="grid-column:12/14;grid-row:2;">
-            <svg width="86" height="46" viewBox="0 0 90 52"><line x1="5" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="85" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="3" y1="50" x2="87" y2="50" stroke="rgba(200,200,255,0.5)" stroke-width="1.8"/><line x1="12" y1="38" x2="78" y2="38" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><line x1="19" y1="27" x2="71" y2="27" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><text x="7" y="36" font-size="13">🥒</text><text x="60" y="28" font-size="13">🥒</text><text x="30" y="48" font-size="13">🥒</text></svg>
-            <div style="font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sky-lt);">Cucumbers</div>
-            <div style="font-size:7px;color:var(--faint);">Full A-frame · 2 seeds/ft</div>
-          </div>
-          <div class="af-c" style="grid-column:12/14;grid-row:3;border-top:2px solid rgba(100,180,255,0.55);">
-            <div style="font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sky-lt);margin-bottom:3px;">Cucumbers</div>
-            <div style="display:flex;gap:6px;"><span style="font-size:20px;">🥒</span><span style="font-size:20px;">🥒</span><span style="font-size:20px;">🥒</span><span style="font-size:20px;">🥒</span></div>
-            <div style="font-size:7px;color:var(--faint);">A-frame south face · 4 plants</div>
-            <div style="position:absolute;top:3px;left:50%;transform:translateX(-50%);font-size:6.5px;color:rgba(100,180,255,0.6);font-family:'DM Mono',monospace;white-space:nowrap;z-index:2;">▲ A-FRAME RIDGE ▲</div>
-          </div>
-          <div class="mulch-c" style="grid-column:12/14;grid-row:4;"><div style="font-size:18px;">🪨🌱</div><div style="font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-lt);line-height:1.3;text-align:center;">Mulch + Humus<br>Pre-Plant Mix</div><div style="font-size:7px;color:var(--faint);text-align:center;line-height:1.3;">Amend before planting</div></div>
-          <div class="sq-c" style="grid-column:12;grid-row:5;"><div style="display:flex;gap:3px;"><span style="font-size:19px;">🥒</span><span style="font-size:19px;">🥒</span></div><div style="font-family:'DM Mono',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--sky-lt);line-height:1.3;text-align:center;">Zucchini · 2</div></div>
-          <div class="sq-c" style="grid-column:13;grid-row:5;"><div style="display:flex;gap:3px;"><svg width="17" height="25" viewBox="0 0 20 28"><ellipse cx="10" cy="16" rx="8" ry="11" fill="#F9A825"/><ellipse cx="10" cy="10" rx="4" ry="5" fill="#FBC02D"/><line x1="10" y1="5" x2="10" y2="1" stroke="#4CAF50" stroke-width="1.5"/></svg><svg width="17" height="25" viewBox="0 0 20 28"><ellipse cx="10" cy="16" rx="8" ry="11" fill="#F9A825"/><ellipse cx="10" cy="10" rx="4" ry="5" fill="#FBC02D"/><line x1="10" y1="5" x2="10" y2="1" stroke="#4CAF50" stroke-width="1.5"/></svg></div><div style="font-family:'DM Mono',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--sky-lt);line-height:1.3;text-align:center;">Yel. Squash · 2</div></div>
-
+          <!-- Plant cells are rendered by JS renderGrid() -->
         </div><!-- /plot -->
 
         <!-- Zone strip -->
@@ -779,7 +692,8 @@ function setSeason(s){
     return Object.assign({}, getDates(), {
       _mist:    getWater().mist,
       _soak:    getWater().soak,
-      _savedAt: Date.now()   // ← the key to conflict detection
+      _savedAt: Date.now(),  // ← the key to conflict detection
+      _plants:  window._plants
     });
   }
 
@@ -905,6 +819,8 @@ function setSeason(s){
     }, 800);
   }
 
+  window._saveToBin = saveToBin;
+
   // ── LOAD FROM BIN ────────────────────────────────
   function loadFromBin(id){
     setStatus('Loading saved data…');
@@ -921,6 +837,10 @@ function setSeason(s){
         // This way if two devices load at different times, we compare apples to apples
         loadedAt = data.record._savedAt || Date.now();
         updateWaterDisplay();
+        if(data.record._plants && Array.isArray(data.record._plants)){
+          window._plants = data.record._plants;
+          if(window.renderGrid) window.renderGrid();
+        }
       } else {
         loadedAt = Date.now();
       }
@@ -1025,6 +945,267 @@ function setSeason(s){
   });
 
 })();
+
+// ══════════════════════════════════════════════════
+// DEFAULT PLANT DATA
+// ══════════════════════════════════════════════════
+var DEFAULT_PLANTS = [
+  // COL 1 — Spring: Radishes, Summer: Bush Beans
+  { id:'c1r1-sp', col:1, row:1, rowSpan:1, colSpan:1, name:'Radishes', variety:'', emoji:'🌱', type:'radish', season:'spring' },
+  { id:'c1r2-sp', col:1, row:2, rowSpan:1, colSpan:1, name:'Radishes', variety:'', emoji:'🌱', type:'radish', season:'spring' },
+  { id:'c1r3-sp', col:1, row:3, rowSpan:1, colSpan:1, name:'Radishes', variety:'', emoji:'🌱', type:'radish', season:'spring' },
+  { id:'c1r4-sp', col:1, row:4, rowSpan:1, colSpan:1, name:'Radishes', variety:'', emoji:'🌱', type:'radish', season:'spring' },
+  { id:'c1r1-su', col:1, row:1, rowSpan:1, colSpan:1, name:'Bush Beans', variety:'9/sq ft', emoji:'🫘', type:'simple', season:'summer' },
+  { id:'c1r2-su', col:1, row:2, rowSpan:1, colSpan:1, name:'Bush Beans', variety:'', emoji:'🫘', type:'simple', season:'summer' },
+  { id:'c1r3-su', col:1, row:3, rowSpan:1, colSpan:1, name:'Bush Beans', variety:'', emoji:'🫘', type:'simple', season:'summer' },
+  { id:'c1r4-su', col:1, row:4, rowSpan:1, colSpan:1, name:'Bush Beans', variety:'', emoji:'🫘', type:'simple', season:'summer' },
+  // COL 2 — Spring: Spinach, Summer: Jalapeño
+  { id:'c2r1-sp', col:2, row:1, rowSpan:1, colSpan:1, name:'Spinach', variety:'', emoji:'🥬', type:'simple', season:'spring' },
+  { id:'c2r2-sp', col:2, row:2, rowSpan:1, colSpan:1, name:'Spinach', variety:'', emoji:'🥬', type:'simple', season:'spring' },
+  { id:'c2r3-sp', col:2, row:3, rowSpan:1, colSpan:1, name:'Spinach', variety:'', emoji:'🥬', type:'simple', season:'spring' },
+  { id:'c2r4-sp', col:2, row:4, rowSpan:1, colSpan:1, name:'Spinach', variety:'', emoji:'🥬', type:'simple', season:'spring' },
+  { id:'c2r1-su', col:2, row:1, rowSpan:1, colSpan:1, name:'Jalapeño', variety:'1 plant/sq', emoji:'🌶️', type:'simple', season:'summer' },
+  { id:'c2r2-su', col:2, row:2, rowSpan:1, colSpan:1, name:'Jalapeño', variety:'', emoji:'🌶️', type:'simple', season:'summer' },
+  { id:'c2r3-su', col:2, row:3, rowSpan:1, colSpan:1, name:'Jalapeño', variety:'', emoji:'🌶️', type:'simple', season:'summer' },
+  { id:'c2r4-su', col:2, row:4, rowSpan:1, colSpan:1, name:'Jalapeño', variety:'', emoji:'🌶️', type:'simple', season:'summer' },
+  // COL 3 — Spring: Baby Kale, Summer: Habanero
+  { id:'c3r1-sp', col:3, row:1, rowSpan:1, colSpan:1, name:'Baby Kale', variety:'', emoji:'🌿', type:'kale', season:'spring' },
+  { id:'c3r2-sp', col:3, row:2, rowSpan:1, colSpan:1, name:'Baby Kale', variety:'', emoji:'🌿', type:'kale', season:'spring' },
+  { id:'c3r3-sp', col:3, row:3, rowSpan:1, colSpan:1, name:'Baby Kale', variety:'', emoji:'🌿', type:'kale', season:'spring' },
+  { id:'c3r4-sp', col:3, row:4, rowSpan:1, colSpan:1, name:'Baby Kale', variety:'', emoji:'🌿', type:'kale', season:'spring' },
+  { id:'c3r1-su', col:3, row:1, rowSpan:1, colSpan:1, name:'Habanero', variety:'1 plant/sq', emoji:'🫑', type:'simple', season:'summer' },
+  { id:'c3r2-su', col:3, row:2, rowSpan:1, colSpan:1, name:'Habanero', variety:'', emoji:'🫑', type:'simple', season:'summer' },
+  { id:'c3r3-su', col:3, row:3, rowSpan:1, colSpan:1, name:'Habanero', variety:'', emoji:'🫑', type:'simple', season:'summer' },
+  { id:'c3r4-su', col:3, row:4, rowSpan:1, colSpan:1, name:'Habanero', variety:'', emoji:'🫑', type:'simple', season:'summer' },
+  // COL 4 — all blank
+  { id:'c4r1', col:4, row:1, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c4r2', col:4, row:2, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c4r3', col:4, row:3, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c4r4', col:4, row:4, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  // COL 5 — Indeterminate Tomatoes (each spans 2 rows)
+  { id:'c5r1', col:5, row:1, rowSpan:2, colSpan:1, name:'Indeterminate Tomato 1', variety:'Heavy-Duty Cage · 24"', emoji:'🍅', type:'tomato', season:'both' },
+  { id:'c5r3', col:5, row:3, rowSpan:2, colSpan:1, name:'Indeterminate Tomato 2', variety:'Heavy-Duty Cage · 24"', emoji:'🍅', type:'tomato', season:'both' },
+  // COL 6 — all blank
+  { id:'c6r1', col:6, row:1, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c6r2', col:6, row:2, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c6r3', col:6, row:3, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c6r4', col:6, row:4, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  // COL 7 — blank, det tomato (rows 2-3), yellow onion
+  { id:'c7r1', col:7, row:1, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c7r2', col:7, row:2, rowSpan:2, colSpan:1, name:'Determinate Tomato', variety:'Cage · 24"', emoji:'🍅', type:'tomato', season:'both' },
+  { id:'c7r4', col:7, row:4, rowSpan:1, colSpan:1, name:'Yellow Onion', variety:'', emoji:'🧅', type:'onion', season:'both' },
+  // COL 8 — blanks then red onion
+  { id:'c8r1', col:8, row:1, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c8r2', col:8, row:2, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c8r3', col:8, row:3, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c8r4', col:8, row:4, rowSpan:1, colSpan:1, name:'Red Onion', variety:'', emoji:'🧅', type:'red-onion', season:'both' },
+  // COL 9 — peppers
+  { id:'c9r1', col:9, row:1, rowSpan:1, colSpan:1, name:'Bell Pepper', variety:'Staked', emoji:'🫑', type:'pepper', season:'both' },
+  { id:'c9r2', col:9, row:2, rowSpan:2, colSpan:1, name:'Bell Pepper', variety:'Single Stake &amp; Soft Ties', emoji:'🫑', type:'pepper', season:'both' },
+  { id:'c9r4', col:9, row:4, rowSpan:1, colSpan:1, name:'Bell Pepper', variety:'Staked', emoji:'🫑', type:'pepper', season:'both' },
+  // COL 10 — all blank
+  { id:'c10r1', col:10, row:1, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c10r2', col:10, row:2, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c10r3', col:10, row:3, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  { id:'c10r4', col:10, row:4, rowSpan:1, colSpan:1, name:'', variety:'', emoji:'', type:'blank', season:'both' },
+  // COLS 11-12 — A-frame zone
+  { id:'c11r1-sp', col:11, row:1, rowSpan:1, colSpan:2, name:'Sugar Snap Peas', variety:'A-frame north face · ~24 seeds', emoji:'🫛', type:'aframe', season:'spring' },
+  { id:'c11r1-su', col:11, row:1, rowSpan:1, colSpan:2, name:'Cucumbers', variety:'Full A-frame · 2 seeds/ft', emoji:'🥒', type:'aframe', season:'summer' },
+  { id:'c11r2', col:11, row:2, rowSpan:1, colSpan:2, name:'Cucumbers', variety:'A-frame south face · 4 plants', emoji:'🥒', type:'aframe-south', season:'both' },
+  { id:'c11r3', col:11, row:3, rowSpan:1, colSpan:2, name:'Mulch + Humus', variety:'Amend before planting', emoji:'🪨', type:'mulch', season:'both' },
+  { id:'c11r4', col:11, row:4, rowSpan:1, colSpan:1, name:'Zucchini', variety:'2 plants', emoji:'🥒', type:'squash', season:'both' },
+  { id:'c12r4', col:12, row:4, rowSpan:1, colSpan:1, name:'Yellow Squash', variety:'2 plants', emoji:'🌽', type:'yellow-squash', season:'both' }
+];
+
+// ══════════════════════════════════════════════════
+// PLANT MANAGEMENT
+// ══════════════════════════════════════════════════
+(function(){
+  window._plants = JSON.parse(JSON.stringify(DEFAULT_PLANTS));
+
+  var editingId = null;
+
+  function seasonClass(season){
+    if(season==='spring') return 'sp-only';
+    if(season==='summer') return 'su-only';
+    return '';
+  }
+
+  var RADISH_SVG = '<svg width="19" height="25" viewBox="0 0 22 28"><ellipse cx="5" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(-20 5 6)"/><ellipse cx="17" cy="6" rx="3.5" ry="5.5" fill="#4CAF50" transform="rotate(20 17 6)"/><ellipse cx="11" cy="5" rx="3.5" ry="5.5" fill="#66BB6A"/><line x1="11" y1="9" x2="11" y2="13" stroke="#8BC34A" stroke-width="1.2"/><circle cx="11" cy="20" r="6.5" fill="#E53935"/><line x1="11" y1="26" x2="11" y2="28" stroke="#8BC34A" stroke-width="1.2"/></svg>';
+  var KALE_SVG = '<svg width="18" height="20" viewBox="0 0 20 22"><ellipse cx="10" cy="12" rx="8" ry="10" fill="#2E7D32" transform="rotate(-10 10 12)"/><ellipse cx="10" cy="12" rx="5" ry="9" fill="#388E3C" transform="rotate(8 10 12)"/><line x1="10" y1="20" x2="10" y2="22" stroke="#1B5E20" stroke-width="1.5"/></svg>';
+  var RED_ONION_SVG = '<svg width="24" height="26" viewBox="0 0 26 28"><ellipse cx="13" cy="16" rx="11" ry="10" fill="#7B1FA2"/><ellipse cx="13" cy="16" rx="8" ry="7.5" fill="#9C27B0"/><ellipse cx="13" cy="12" rx="5" ry="4" fill="#AB47BC"/><line x1="13" y1="6" x2="10" y2="1" stroke="#4CAF50" stroke-width="1.5"/><line x1="13" y1="6" x2="13" y2="0" stroke="#66BB6A" stroke-width="1.5"/><line x1="13" y1="6" x2="16" y2="1" stroke="#4CAF50" stroke-width="1.5"/></svg>';
+  var YELLOW_SQUASH_SVG = '<svg width="17" height="25" viewBox="0 0 20 28"><ellipse cx="10" cy="16" rx="8" ry="11" fill="#F9A825"/><ellipse cx="10" cy="10" rx="4" ry="5" fill="#FBC02D"/><line x1="10" y1="5" x2="10" y2="1" stroke="#4CAF50" stroke-width="1.5"/></svg>';
+  var CAGE_SVG_LARGE = '<line x1="11" y1="8" x2="11" y2="48" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><line x1="26" y1="4" x2="26" y2="50" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><line x1="41" y1="8" x2="41" y2="48" stroke="rgba(255,255,255,0.28)" stroke-width="1.3"/><ellipse cx="26" cy="13" rx="19" ry="6" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.5"/><ellipse cx="26" cy="30" rx="21" ry="6.5" fill="none" stroke="rgba(255,255,255,0.58)" stroke-width="1.5"/><ellipse cx="26" cy="47" rx="22" ry="6.5" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.3"/>';
+  var AFRAME_PEA_SVG = '<svg width="86" height="46" viewBox="0 0 90 52"><line x1="5" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="85" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="3" y1="50" x2="87" y2="50" stroke="rgba(200,200,255,0.5)" stroke-width="1.8"/><line x1="12" y1="38" x2="78" y2="38" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><line x1="19" y1="27" x2="71" y2="27" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><text x="7" y="36" font-size="12">🫛</text><text x="60" y="28" font-size="12">🫛</text><text x="30" y="48" font-size="12">🫛</text></svg>';
+  var AFRAME_CUC_SVG = '<svg width="86" height="46" viewBox="0 0 90 52"><line x1="5" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="85" y1="50" x2="45" y2="5" stroke="rgba(200,200,255,0.75)" stroke-width="2"/><line x1="3" y1="50" x2="87" y2="50" stroke="rgba(200,200,255,0.5)" stroke-width="1.8"/><line x1="12" y1="38" x2="78" y2="38" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><line x1="19" y1="27" x2="71" y2="27" stroke="rgba(200,200,255,0.4)" stroke-width="1.3"/><text x="7" y="36" font-size="13">🥒</text><text x="60" y="28" font-size="13">🥒</text><text x="30" y="48" font-size="13">🥒</text></svg>';
+
+  function editBtn(id){
+    return '<button class="cell-edit-btn" onclick="openPlantEdit(event,\''+id+'\')" title="Edit plant">✏️</button>';
+  }
+
+  function gridStyle(p){
+    var col = p.col + 1;
+    var rowStart = p.row + 1;
+    var s = 'grid-column:'+col;
+    if(p.colSpan > 1) s += '/'+(col + p.colSpan);
+    s += ';grid-row:'+rowStart;
+    if(p.rowSpan > 1) s += '/'+(rowStart + p.rowSpan);
+    return s;
+  }
+
+  function renderCell(p){
+    var sc = seasonClass(p.season);
+    var gs = gridStyle(p);
+    var eb = editBtn(p.id);
+    var scClass = sc ? ' '+sc : '';
+
+    if(p.type === 'blank'){
+      return '<div class="blank" data-pid="'+p.id+'" style="'+gs+';position:relative;">'+eb+'</div>';
+    }
+    if(p.type === 'simple'){
+      var icons = '';
+      for(var i=0;i<4;i++) icons += '<span>'+p.emoji+'</span>';
+      return '<div class="c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';padding:2px;position:relative;"><div class="g2x2">'+icons+'</div><div class="lbl">'+p.name+'</div>'+(p.variety?'<div class="lbl2">'+p.variety+'</div>':'')+eb+'</div>';
+    }
+    if(p.type === 'radish'){
+      var svgs = RADISH_SVG+RADISH_SVG+RADISH_SVG+RADISH_SVG;
+      return '<div class="c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';padding:2px;position:relative;"><div class="g2x2">'+svgs+'</div><div class="lbl">'+p.name+'</div>'+eb+'</div>';
+    }
+    if(p.type === 'kale'){
+      var svgs = KALE_SVG+KALE_SVG+KALE_SVG+KALE_SVG;
+      return '<div class="c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';padding:2px;position:relative;"><div class="g2x2">'+svgs+'</div><div class="lbl">'+p.name+'</div>'+eb+'</div>';
+    }
+    if(p.type === 'tomato'){
+      return '<div class="tom-c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';position:relative;"><div class="row-b"></div><div class="cage-lbl">'+p.variety+'</div><div class="cw" style="width:50px;height:52px;margin:2px 0;"><svg class="csw" viewBox="0 0 52 54">'+CAGE_SVG_LARGE+'</svg><span class="tic">🍅</span></div><div class="tom-name">'+p.name+'</div>'+eb+'</div>';
+    }
+    if(p.type === 'pepper'){
+      var extra = (p.rowSpan > 1) ? 'justify-content:center;gap:4px;' : '';
+      var rb = (p.rowSpan > 1) ? '<div class="row-b"></div>' : '';
+      return '<div class="pep-c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';'+extra+'position:relative;">'+rb+'<div class="stk-lbl">'+(p.variety||'Stake')+'</div><span style="font-size:22px;">🫑</span><div class="stk-line"></div>'+eb+'</div>';
+    }
+    if(p.type === 'onion'){
+      return '<div class="onion-c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';position:relative;"><span style="font-size:22px;">🧅</span><div class="lbl" style="color:var(--gold-lt);">'+p.name+'</div>'+eb+'</div>';
+    }
+    if(p.type === 'red-onion'){
+      return '<div class="onion-c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';position:relative;">'+RED_ONION_SVG+'<div class="lbl" style="color:#CE93D8;">'+p.name+'</div>'+eb+'</div>';
+    }
+    if(p.type === 'aframe'){
+      var frameSvg = (p.emoji === '🫛') ? AFRAME_PEA_SVG : AFRAME_CUC_SVG;
+      return '<div class="af-c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';position:relative;">'+frameSvg+'<div style="font-family:\'DM Mono\',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sky-lt);">'+p.name+'</div><div style="font-size:7px;color:var(--faint);">'+p.variety+'</div>'+eb+'</div>';
+    }
+    if(p.type === 'aframe-south'){
+      var cucs = '<span style="font-size:20px;">🥒</span><span style="font-size:20px;">🥒</span><span style="font-size:20px;">🥒</span><span style="font-size:20px;">🥒</span>';
+      return '<div class="af-c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';border-top:2px solid rgba(100,180,255,0.55);position:relative;"><div style="font-family:\'DM Mono\',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--sky-lt);margin-bottom:3px;">'+p.name+'</div><div style="display:flex;gap:6px;">'+cucs+'</div><div style="font-size:7px;color:var(--faint);">'+p.variety+'</div><div style="position:absolute;top:3px;left:50%;transform:translateX(-50%);font-size:6.5px;color:rgba(100,180,255,0.6);font-family:\'DM Mono\',monospace;white-space:nowrap;z-index:2;">▲ A-FRAME RIDGE ▲</div>'+eb+'</div>';
+    }
+    if(p.type === 'mulch'){
+      return '<div class="mulch-c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';position:relative;"><div style="font-size:18px;">🪨🌱</div><div style="font-family:\'DM Mono\',monospace;font-size:7.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold-lt);line-height:1.3;text-align:center;">'+p.name+'<br>Pre-Plant Mix</div><div style="font-size:7px;color:var(--faint);text-align:center;line-height:1.3;">'+p.variety+'</div>'+eb+'</div>';
+    }
+    if(p.type === 'squash'){
+      var icons2 = '<span style="font-size:19px;">'+p.emoji+'</span><span style="font-size:19px;">'+p.emoji+'</span>';
+      return '<div class="sq-c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';position:relative;"><div style="display:flex;gap:3px;">'+icons2+'</div><div style="font-family:\'DM Mono\',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--sky-lt);line-height:1.3;text-align:center;">'+p.name+' · 2</div>'+eb+'</div>';
+    }
+    if(p.type === 'yellow-squash'){
+      var ys2 = YELLOW_SQUASH_SVG+YELLOW_SQUASH_SVG;
+      return '<div class="sq-c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';position:relative;"><div style="display:flex;gap:3px;">'+ys2+'</div><div style="font-family:\'DM Mono\',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--sky-lt);line-height:1.3;text-align:center;">'+p.name+' · 2</div>'+eb+'</div>';
+    }
+    return '';
+  }
+
+  window.renderGrid = function(){
+    var plot = document.getElementById('plot');
+    var old = plot.querySelectorAll('[data-pid]');
+    old.forEach(function(el){ el.parentNode.removeChild(el); });
+    var frag = document.createDocumentFragment();
+    var tmp = document.createElement('div');
+    window._plants.forEach(function(p){
+      tmp.innerHTML = renderCell(p);
+      if(tmp.firstElementChild) frag.appendChild(tmp.firstElementChild);
+    });
+    plot.appendChild(frag);
+  };
+
+  window.openPlantEdit = function(e, pid){
+    e.stopPropagation();
+    editingId = pid;
+    var p = window._plants.find(function(x){ return x.id === pid; });
+    if(!p) return;
+    document.getElementById('pe-name').value = p.name;
+    document.getElementById('pe-variety').value = p.variety || '';
+    document.getElementById('pe-emoji').value = p.emoji || '';
+    document.getElementById('pe-season').value = p.season || 'both';
+    document.getElementById('plant-modal-overlay').classList.remove('modal-hidden');
+  };
+
+  window.closePlantModal = function(e){
+    if(e && e.target !== document.getElementById('plant-modal-overlay')) return;
+    document.getElementById('plant-modal-overlay').classList.add('modal-hidden');
+    editingId = null;
+  };
+
+  window.savePlantEdit = function(){
+    if(!editingId) return;
+    var p = window._plants.find(function(x){ return x.id === editingId; });
+    if(!p) return;
+    p.name    = document.getElementById('pe-name').value.trim();
+    p.variety = document.getElementById('pe-variety').value.trim();
+    p.emoji   = document.getElementById('pe-emoji').value.trim();
+    p.season  = document.getElementById('pe-season').value;
+    document.getElementById('plant-modal-overlay').classList.add('modal-hidden');
+    editingId = null;
+    window.renderGrid();
+    if(window._saveToBin) window._saveToBin();
+  };
+
+  window.clearPlantCell = function(){
+    if(!editingId) return;
+    var p = window._plants.find(function(x){ return x.id === editingId; });
+    if(!p) return;
+    p.name    = '';
+    p.variety = '';
+    p.emoji   = '';
+    p.type    = 'blank';
+    document.getElementById('plant-modal-overlay').classList.add('modal-hidden');
+    editingId = null;
+    window.renderGrid();
+    if(window._saveToBin) window._saveToBin();
+  };
+
+  window.renderGrid();
+})();
 </script>
+
+<!-- ══ PLANT EDIT MODAL ══ -->
+<div id="plant-modal-overlay" class="modal-hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;" onclick="closePlantModal(event)">
+  <div id="plant-modal" style="background:var(--bark);border:1px solid rgba(200,146,58,0.4);border-radius:14px;padding:22px 24px;min-width:300px;max-width:380px;width:90%;position:relative;" onclick="event.stopPropagation()">
+    <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--gold-lt);margin-bottom:16px;">Edit Plant</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <label style="font-size:11px;color:var(--faint);font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;">
+        Name
+        <input id="pe-name" type="text" style="display:block;width:100%;margin-top:4px;background:rgba(200,146,58,0.1);border:1px solid rgba(200,146,58,0.3);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;outline:none;" />
+      </label>
+      <label style="font-size:11px;color:var(--faint);font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;">
+        Variety / Notes
+        <input id="pe-variety" type="text" style="display:block;width:100%;margin-top:4px;background:rgba(200,146,58,0.1);border:1px solid rgba(200,146,58,0.3);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;outline:none;" />
+      </label>
+      <label style="font-size:11px;color:var(--faint);font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;">
+        Emoji
+        <input id="pe-emoji" type="text" style="display:block;width:100%;margin-top:4px;background:rgba(200,146,58,0.1);border:1px solid rgba(200,146,58,0.3);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:20px;padding:7px 10px;outline:none;" maxlength="4" />
+      </label>
+      <label style="font-size:11px;color:var(--faint);font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;">
+        Season
+        <select id="pe-season" style="display:block;width:100%;margin-top:4px;background:rgba(44,26,14,0.95);border:1px solid rgba(200,146,58,0.3);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;outline:none;">
+          <option value="both">Both seasons</option>
+          <option value="spring">Spring only</option>
+          <option value="summer">Summer only</option>
+        </select>
+      </label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end;">
+      <button onclick="clearPlantCell()" style="padding:7px 14px;border-radius:6px;border:1px solid rgba(218,54,51,0.4);background:rgba(218,54,51,0.1);color:#ff7b7b;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">Clear Cell</button>
+      <button onclick="closePlantModal()" style="padding:7px 14px;border-radius:6px;border:1px solid rgba(200,146,58,0.3);background:transparent;color:var(--faint);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">Cancel</button>
+      <button onclick="savePlantEdit()" style="padding:7px 14px;border-radius:6px;border:none;background:var(--gold);color:var(--soil);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-weight:600;">Save</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
