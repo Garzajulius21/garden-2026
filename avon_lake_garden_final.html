@@ -1572,7 +1572,7 @@ var DEFAULT_PLANTS = [
     var bed = activeBed();
     var newName = document.getElementById('bs-name').value.trim() || bed.name;
     var newCols = Math.max(2, Math.min(20, parseInt(document.getElementById('bs-cols').value) || bed.cols));
-    var newRows = Math.max(1, Math.min(12, parseInt(document.getElementById('bs-rows').value) || bed.rows));
+    var newRows = Math.max(1, Math.min(20, parseInt(document.getElementById('bs-rows').value) || bed.rows));
 
     bed.name = newName;
 
@@ -1677,7 +1677,7 @@ var DEFAULT_PLANTS = [
       </label>
       <label style="font-size:11px;color:var(--faint);font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;">
         Depth (rows = feet)
-        <input id="bs-rows" type="number" min="1" max="12" style="display:block;width:100%;margin-top:4px;background:rgba(200,146,58,0.1);border:1px solid rgba(200,146,58,0.3);border-radius:6px;color:var(--cream);font-family:'DM Mono',sans-serif;font-size:13px;padding:7px 10px;outline:none;" />
+        <input id="bs-rows" type="number" min="1" max="20" style="display:block;width:100%;margin-top:4px;background:rgba(200,146,58,0.1);border:1px solid rgba(200,146,58,0.3);border-radius:6px;color:var(--cream);font-family:'DM Mono',sans-serif;font-size:13px;padding:7px 10px;outline:none;" />
       </label>
       <div style="font-size:10px;color:var(--faint);font-style:italic;line-height:1.5;">
         Shrinking the grid removes plants in removed columns/rows. Expanding adds blank cells.
