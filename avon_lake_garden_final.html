@@ -428,7 +428,7 @@ body.summer .su-hint { display:block; }
     <div class="grid-meta">
       <div class="grid-meta-left">🧭 North at top · runs East–West · south edge gets best afternoon sun</div>
       <div class="grid-meta-right">
-        <span class="dim-lbl">4&prime; × 12&prime; · 48 sq ft</span>
+        <span class="dim-lbl" id="bed-dim-label">4&prime; × 12&prime; · 48 sq ft</span>
         <button class="season-btn active" id="btn-sp" onclick="setSeason('spring')">🌱 Spring</button>
         <button class="season-btn summer-btn" id="btn-su" onclick="setSeason('summer')">☀️ Summer</button>
       </div>
@@ -1514,6 +1514,12 @@ var DEFAULT_PLANTS = [
     var gridLeft = document.querySelector('.grid-left');
     if (gridLeft) {
       gridLeft.style.minWidth = 'calc(var(--LW) + ' + bed.cols + ' * var(--CW))';
+    }
+
+    // Update dimension label
+    var dimLabel = document.getElementById('bed-dim-label');
+    if (dimLabel) {
+      dimLabel.textContent = bed.rows + '\u2032 \xd7 ' + bed.cols + '\u2032 \xb7 ' + (bed.rows * bed.cols) + ' sq ft';
     }
 
     // Show/hide zone fills and dividers — only for the default 12x4 layout
