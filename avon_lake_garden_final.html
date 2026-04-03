@@ -409,6 +409,15 @@ body.summer .su-hint { display:block; }
   <div id="weather-bar" class="weather-bar">
     <span id="weather-loading" style="font-size:11px;color:var(--faint);font-style:italic;">Loading local weather…</span>
   </div>
+  <div id="notif-controls" style="margin-top:8px;display:flex;justify-content:center;">
+    <button id="notif-btn" onclick="toggleNotifications()" style="
+      font-family:'DM Mono',monospace; font-size:10px; letter-spacing:1px;
+      text-transform:uppercase; padding:5px 14px; border-radius:20px;
+      border:1px solid rgba(200,146,58,0.35); background:transparent;
+      color:var(--faint); cursor:pointer; transition:all 0.2s;
+      display:inline-flex; align-items:center; gap:6px;
+    ">🔔 Enable Weather Alerts</button>
+  </div>
 </div>
 
 <div class="card">
@@ -673,8 +682,18 @@ function setSeason(s){
   function load(){
     var cur=fetch('https://api.openweathermap.org/data/2.5/weather?zip='+ZIP+',us&appid='+OWM+'&units=imperial').then(function(r){return r.json();});
     var fct=fetch('https://api.openweathermap.org/data/2.5/forecast?zip='+ZIP+',us&appid='+OWM+'&units=imperial&cnt=8').then(function(r){return r.json();});
-    Promise.all([cur,fct]).then(function(r){render(r[0],r[1]);}).catch(function(){document.getElementById('weather-loading').textContent='⚠️ Weather unavailable';});
+    Promise.all([cur,fct]).then(function(r){
+      render(r[0],r[1]);
+      // Fire notification for any active alerts
+      if(window.fireWeatherNotif){
+        var iF=(function(){var lows=r[1].list.map(function(i){return i.main.temp_min;});return Math.round(Math.min.apply(null,lows))<=36;})();
+        var gust=r[0].wind.gust?Math.round(r[0].wind.gust):Math.round(r[0].wind.speed);
+        var iW=gust>30;
+        window.fireWeatherNotif({frost:iF,wind:iW});
+      }
+    }).catch(function(){document.getElementById('weather-loading').textContent='⚠️ Weather unavailable';});
   }
+  window._refetchWeather = load;
   load();
   setInterval(load,15*60*1000);
 })();
@@ -1617,6 +1636,112 @@ var DEFAULT_PLANTS = [
   window.renderBedTabs();
   window.updateGridDimensions();
   window.renderGrid();
+})();
+
+// ══════════════════════════════════════════════════
+// NOTIFICATION SYSTEM
+// ══════════════════════════════════════════════════
+(function(){
+  var NOTIF_KEY = 'garden_notif_enabled';
+  var LAST_NOTIF_KEY = 'garden_last_notif_date';
+  var eveningTimer = null;
+
+  function isEnabled() {
+    return localStorage.getItem(NOTIF_KEY) === 'yes' && Notification.permission === 'granted';
+  }
+
+  function updateBtn() {
+    var btn = document.getElementById('notif-btn');
+    if (!btn) return;
+    if (!('Notification' in window)) {
+      btn.style.display = 'none';
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      btn.textContent = '🔕 Notifications Blocked';
+      btn.style.color = 'rgba(245,237,216,0.3)';
+      btn.style.cursor = 'default';
+      return;
+    }
+    if (isEnabled()) {
+      btn.innerHTML = '🔔 Alerts On';
+      btn.style.color = 'var(--sprout)';
+      btn.style.borderColor = 'rgba(138,181,90,0.5)';
+    } else {
+      btn.innerHTML = '🔔 Enable Weather Alerts';
+      btn.style.color = 'var(--faint)';
+      btn.style.borderColor = 'rgba(200,146,58,0.35)';
+    }
+  }
+
+  window.toggleNotifications = function() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'denied') return;
+    if (isEnabled()) {
+      localStorage.setItem(NOTIF_KEY, 'no');
+      updateBtn();
+      return;
+    }
+    Notification.requestPermission().then(function(result) {
+      if (result === 'granted') {
+        localStorage.setItem(NOTIF_KEY, 'yes');
+        updateBtn();
+        // Show a confirmation notification
+        new Notification('Garden Alerts Active 🌱', {
+          body: 'You\'ll be notified about frost and wind warnings.',
+          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌱</text></svg>'
+        });
+        scheduleEveningCheck();
+      } else {
+        updateBtn();
+      }
+    });
+  };
+
+  // Fire a notification for active weather alerts
+  window.fireWeatherNotif = function(alerts) {
+    if (!isEnabled()) return;
+    // Dedupe: only notify once per calendar day
+    var today = new Date().toDateString();
+    if (localStorage.getItem(LAST_NOTIF_KEY) === today) return;
+
+    var messages = [];
+    if (alerts.frost) messages.push('❄️ Frost warning tonight — cover tender plants');
+    if (alerts.wind) messages.push('💨 High wind warning — check trellises and cages');
+
+    if (messages.length === 0) return;
+
+    localStorage.setItem(LAST_NOTIF_KEY, today);
+    new Notification('Garden Alert 🌿', {
+      body: messages.join('\n'),
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🌿</text></svg>',
+      tag: 'garden-weather-alert',
+      requireInteraction: true
+    });
+  };
+
+  // Schedule a 6pm re-check every day the app is open
+  function scheduleEveningCheck() {
+    if (eveningTimer) clearTimeout(eveningTimer);
+    var now = new Date();
+    var target = new Date();
+    target.setHours(18, 0, 0, 0);
+    if (now >= target) {
+      // Already past 6pm — schedule for tomorrow 6pm
+      target.setDate(target.getDate() + 1);
+    }
+    var ms = target - now;
+    eveningTimer = setTimeout(function() {
+      // Re-fetch weather at 6pm
+      if (window._refetchWeather) window._refetchWeather();
+      // Re-schedule for the next day
+      scheduleEveningCheck();
+    }, ms);
+  }
+
+  // Init
+  updateBtn();
+  if (isEnabled()) scheduleEveningCheck();
 })();
 </script>
 
