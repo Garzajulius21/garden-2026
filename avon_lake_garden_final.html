@@ -182,7 +182,7 @@ body.summer .sp-only { display:none !important; }
 .sq-c { border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:4px; position:relative; z-index:3; text-align:center; background:rgba(74,127,168,0.06); }
 
 /* Zone strip */
-.zone-strip { display:flex; gap:0; }
+.zone-strip { display:flex; gap:0; width:calc(var(--LW) + 12 * var(--CW)); }
 .zs-gap { width:var(--LW); flex-shrink:0; }
 .zs-b { flex-shrink:0; padding:5px 4px; text-align:center; font-family:'DM Mono',monospace; font-size:8px; letter-spacing:1.5px; text-transform:uppercase; border-radius:4px; }
 .zs-sp  { width:calc(3*var(--CW)); background:rgba(138,181,90,0.14); color:var(--sprout); }
@@ -190,7 +190,7 @@ body.summer .sp-only { display:none !important; }
 .zs-gap2{ width:calc(1*var(--CW)); background:rgba(200,146,58,0.05); color:var(--faint); font-size:7px; }
 .zs-su  { width:calc(5*var(--CW)); background:rgba(200,80,40,0.12); color:#e88a6a; }
 .zs-gap3{ width:calc(1*var(--CW)); background:rgba(200,146,58,0.05); color:var(--faint); font-size:7px; }
-.zs-cl  { width:calc(2*var(--CW)); background:rgba(74,127,168,0.15); color:var(--sky-lt); }
+.zs-cl  { flex:1; min-width:calc(2*var(--CW)); background:rgba(74,127,168,0.15); color:var(--sky-lt); }
 
 /* Summer hint */
 .su-hint { display:none; background:rgba(232,138,106,0.12); border:1px dashed rgba(232,138,106,0.4); border-radius:8px; padding:10px 14px; font-size:11px; color:#e8aa8a; line-height:1.5; }
