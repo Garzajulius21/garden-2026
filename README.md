@@ -161,6 +161,8 @@ The color palette is built around a soil/bark/sprout theme:
 - **Plant reference table** — transplant dates, spacing, days to harvest
 - **Growing notes** — seasonal guidance cards for key crops
 - **PWA-ready** — Apple mobile web app meta tags for home screen installation
+- **Dynamic plant management** — hover any cell to edit name, variety, emoji, or season; clear cells and repurpose slots without touching code
+- **Cloud-synced plant layout** — plant edits are included in the JSONBin payload and sync across devices
 - **Mobile-optimized** — horizontal scroll blueprint, large touch targets, sunlight contrast
 - **Zero dependencies** — single HTML file, no npm, no build step
 
@@ -225,5 +227,5 @@ Garden 2026 Project/
 - Weather data is fetched once on page load. Refresh the page to update weather conditions.
 - The timestamp handshake conflict detection is designed for two concurrent users. High-frequency simultaneous writes from many users are not supported.
 - JSONBin.io free tier has request rate limits. For heavy use, a paid tier or alternative persistence layer is recommended.
-- The plot layout (crop placement, varieties, dates) is hardcoded for the 2026 season. To adapt for a different plot or season, the grid HTML in the body must be edited directly.
+- The plot layout supports editing individual cells through the UI, but adding new bed dimensions or more than 12 columns requires a code change.
 - OpenWeatherMap One Call 3.0 requires a paid subscription after the free tier request limit is reached.
