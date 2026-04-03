@@ -345,6 +345,59 @@ body.summer .su-hint { display:block; }
 .wd-last { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--faint); }
 .wd-last.recent { color: var(--sprout); }
 .wd-last.overdue { color: #e88a6a; }
+
+/* ── PLANT DATABASE SEARCH ── */
+.plant-search-wrap { position: relative; margin-bottom: 14px; }
+#pe-search {
+  display: block; width: 100%;
+  background: rgba(200,146,58,0.12);
+  border: 1.5px solid rgba(200,146,58,0.5);
+  border-radius: 6px;
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 8px 10px;
+  outline: none;
+}
+#pe-search::placeholder { color: rgba(245,237,216,0.35); }
+#pe-search:focus { border-color: var(--gold); background: rgba(200,146,58,0.18); }
+#plant-search-results {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: #2a1a0a;
+  border: 1px solid rgba(200,146,58,0.4);
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+}
+#plant-search-results.open { display: block; }
+.psr-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(200,146,58,0.1);
+  transition: background 0.1s;
+}
+.psr-item:last-child { border-bottom: none; }
+.psr-item:hover { background: rgba(200,146,58,0.12); }
+.psr-emoji { font-size: 18px; flex-shrink: 0; }
+.psr-name { font-size: 12px; color: var(--cream); font-weight: 500; }
+.psr-meta { font-size: 10px; color: var(--faint); margin-top: 1px; }
+.psr-days { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--gold-lt); margin-left: auto; flex-shrink: 0; }
+.plant-search-divider {
+  display: flex; align-items: center; gap: 8px;
+  margin: 12px 0 10px;
+  font-size: 10px;
+  color: var(--faint);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.plant-search-divider::before,
+.plant-search-divider::after { content: ''; flex: 1; height: 1px; background: rgba(200,146,58,0.2); }
 </style>
 <body class="spring">
 
@@ -947,6 +1000,62 @@ function setSeason(s){
 })();
 
 // ══════════════════════════════════════════════════
+// PLANT DATABASE (searchable)
+// ══════════════════════════════════════════════════
+var PLANT_DB = [
+  { name:'Tomato',          emoji:'🍅', variety:'1 per sq ft',      season:'both',   days:'60–85',  notes:'Warm season · needs cage or stake' },
+  { name:'Cherry Tomato',   emoji:'🍅', variety:'1 per sq ft',      season:'both',   days:'55–65',  notes:'Warm season · prolific producer' },
+  { name:'Roma Tomato',     emoji:'🍅', variety:'1 per sq ft',      season:'both',   days:'75–80',  notes:'Warm season · paste variety' },
+  { name:'Bell Pepper',     emoji:'🫑', variety:'1 per sq ft',      season:'both',   days:'70–85',  notes:'Warm season · stake recommended' },
+  { name:'Jalapeño',        emoji:'🌶️', variety:'1 per sq ft',      season:'summer', days:'65–80',  notes:'Warm season · stake recommended' },
+  { name:'Habanero',        emoji:'🌶️', variety:'1 per sq ft',      season:'summer', days:'75–90',  notes:'Warm season · very hot' },
+  { name:'Banana Pepper',   emoji:'🫑', variety:'1 per sq ft',      season:'both',   days:'65–75',  notes:'Warm season · mild heat' },
+  { name:'Serrano Pepper',  emoji:'🌶️', variety:'1 per sq ft',      season:'summer', days:'70–80',  notes:'Warm season · hotter than jalapeño' },
+  { name:'Cucumber',        emoji:'🥒', variety:'2 seeds/ft',       season:'summer', days:'50–70',  notes:'Warm season · trellis or A-frame' },
+  { name:'Zucchini',        emoji:'🥒', variety:'1 per 4 sq ft',    season:'summer', days:'45–55',  notes:'Warm season · prolific · harvest small' },
+  { name:'Yellow Squash',   emoji:'🌽', variety:'1 per 4 sq ft',    season:'summer', days:'50–60',  notes:'Warm season · harvest at 6–8"' },
+  { name:'Butternut Squash',emoji:'🎃', variety:'1 per 6 sq ft',    season:'summer', days:'80–100', notes:'Warm season · needs space to sprawl' },
+  { name:'Pumpkin',         emoji:'🎃', variety:'1 per 6 sq ft',    season:'summer', days:'90–120', notes:'Warm season · needs lots of space' },
+  { name:'Eggplant',        emoji:'🍆', variety:'1 per sq ft',      season:'summer', days:'65–80',  notes:'Warm season · stake at transplant' },
+  { name:'Okra',            emoji:'🌿', variety:'1 per sq ft',      season:'summer', days:'50–65',  notes:'Warm season · loves heat' },
+  { name:'Sweet Corn',      emoji:'🌽', variety:'1 per sq ft',      season:'summer', days:'70–90',  notes:'Warm season · plant in blocks for pollination' },
+  { name:'Bush Beans',      emoji:'🫘', variety:'9 per sq ft',      season:'summer', days:'50–60',  notes:'Warm season · nitrogen-fixing' },
+  { name:'Pole Beans',      emoji:'🫘', variety:'3 per sq ft',      season:'summer', days:'60–70',  notes:'Warm season · needs trellis' },
+  { name:'Lima Beans',      emoji:'🫘', variety:'4 per sq ft',      season:'summer', days:'65–85',  notes:'Warm season · dry or shell' },
+  { name:'Sugar Snap Peas', emoji:'🫛', variety:'8 per sq ft',      season:'spring', days:'60–70',  notes:'Cool season · trellis · direct sow early' },
+  { name:'Snow Peas',       emoji:'🫛', variety:'8 per sq ft',      season:'spring', days:'55–65',  notes:'Cool season · harvest flat pods' },
+  { name:'Spinach',         emoji:'🥬', variety:'9 per sq ft',      season:'spring', days:'40–50',  notes:'Cool season · bolt-resistant varieties best' },
+  { name:'Lettuce',         emoji:'🥬', variety:'4 per sq ft',      season:'spring', days:'45–60',  notes:'Cool season · cut-and-come-again' },
+  { name:'Arugula',         emoji:'🥬', variety:'9 per sq ft',      season:'spring', days:'35–45',  notes:'Cool season · peppery · bolts fast in heat' },
+  { name:'Kale',            emoji:'🥬', variety:'1 per sq ft',      season:'both',   days:'55–75',  notes:'Cool season · frost improves flavor' },
+  { name:'Baby Kale',       emoji:'🌿', variety:'9 per sq ft',      season:'spring', days:'25–35',  notes:'Cool season · harvest as microgreen or baby leaf' },
+  { name:'Swiss Chard',     emoji:'🥬', variety:'4 per sq ft',      season:'both',   days:'50–60',  notes:'Cool/warm tolerant · cut outer leaves' },
+  { name:'Radish',          emoji:'🌱', variety:'16 per sq ft',     season:'spring', days:'25–35',  notes:'Cool season · fast · great gap filler' },
+  { name:'Carrot',          emoji:'🥕', variety:'9 per sq ft',      season:'both',   days:'70–80',  notes:'Cool season · loose deep soil needed' },
+  { name:'Beet',            emoji:'🫚', variety:'9 per sq ft',      season:'both',   days:'50–70',  notes:'Cool season · eat roots and greens' },
+  { name:'Turnip',          emoji:'🥔', variety:'9 per sq ft',      season:'spring', days:'45–60',  notes:'Cool season · harvest young for best flavor' },
+  { name:'Broccoli',        emoji:'🥦', variety:'1 per sq ft',      season:'spring', days:'70–90',  notes:'Cool season · cut main head · side shoots follow' },
+  { name:'Cauliflower',     emoji:'🥦', variety:'1 per sq ft',      season:'spring', days:'80–100', notes:'Cool season · blanch heads for white color' },
+  { name:'Cabbage',         emoji:'🥬', variety:'1 per sq ft',      season:'spring', days:'70–120', notes:'Cool season · needs consistent moisture' },
+  { name:'Brussels Sprouts',emoji:'🥦', variety:'1 per sq ft',      season:'both',   days:'80–100', notes:'Cool season · frost improves flavor' },
+  { name:'Kohlrabi',        emoji:'🥬', variety:'4 per sq ft',      season:'spring', days:'45–60',  notes:'Cool season · harvest at golf ball size' },
+  { name:'Yellow Onion',    emoji:'🧅', variety:'4 per sq ft',      season:'both',   days:'100–120',notes:'Long season · cure before storing' },
+  { name:'Red Onion',       emoji:'🧅', variety:'4 per sq ft',      season:'both',   days:'100–120',notes:'Long season · milder flavor than yellow' },
+  { name:'Green Onion',     emoji:'🧅', variety:'16 per sq ft',     season:'both',   days:'60–80',  notes:'Pull whole or snip tops · succession plant' },
+  { name:'Garlic',          emoji:'🧄', variety:'4 per sq ft',      season:'both',   days:'240–270',notes:'Plant in fall · harvest next summer' },
+  { name:'Leek',            emoji:'🌿', variety:'4 per sq ft',      season:'both',   days:'100–130',notes:'Cool season · mound soil to blanch stalks' },
+  { name:'Basil',           emoji:'🌿', variety:'4 per sq ft',      season:'summer', days:'25–35',  notes:'Warm season · pinch flowers · loves tomatoes' },
+  { name:'Cilantro',        emoji:'🌿', variety:'9 per sq ft',      season:'spring', days:'45–70',  notes:'Cool season · bolts in heat · succession sow' },
+  { name:'Parsley',         emoji:'🌿', variety:'4 per sq ft',      season:'both',   days:'70–90',  notes:'Biennial · flat or curly varieties' },
+  { name:'Dill',            emoji:'🌿', variety:'4 per sq ft',      season:'both',   days:'40–60',  notes:'Self-seeds readily · keep from bolting near fennel' },
+  { name:'Chives',          emoji:'🌿', variety:'16 per sq ft',     season:'both',   days:'30–60',  notes:'Perennial · snip and regrow all season' },
+  { name:'Mint',            emoji:'🌿', variety:'4 per sq ft',      season:'both',   days:'30–60',  notes:'Aggressive spreader · best in containers' },
+  { name:'Strawberry',      emoji:'🍓', variety:'4 per sq ft',      season:'both',   days:'60–90',  notes:'Perennial · June-bearing or everbearing' },
+  { name:'Watermelon',      emoji:'🍉', variety:'1 per 4 sq ft',    season:'summer', days:'80–90',  notes:'Warm season · needs lots of space and heat' },
+  { name:'Cantaloupe',      emoji:'🍈', variety:'1 per 4 sq ft',    season:'summer', days:'75–90',  notes:'Warm season · trellis with sling support' },
+];
+
+// ══════════════════════════════════════════════════
 // DEFAULT PLANT DATA
 // ══════════════════════════════════════════════════
 var DEFAULT_PLANTS = [
@@ -1134,6 +1243,26 @@ var DEFAULT_PLANTS = [
     document.getElementById('pe-emoji').value = p.emoji || '';
     document.getElementById('pe-season').value = p.season || 'both';
     document.getElementById('plant-modal-overlay').classList.remove('modal-hidden');
+    // Clear search box when modal opens
+    var searchEl = document.getElementById('pe-search');
+    if (searchEl) {
+      searchEl.value = '';
+      document.getElementById('plant-search-results').classList.remove('open');
+      // Wire input event (idempotent — only add once)
+      if (!searchEl._wired) {
+        searchEl.addEventListener('input', function() {
+          renderSearchResults(filterDB(this.value));
+        });
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!e.target.closest('.plant-search-wrap')) {
+            var r = document.getElementById('plant-search-results');
+            if (r) r.classList.remove('open');
+          }
+        });
+        searchEl._wired = true;
+      }
+    }
   };
 
   window.closePlantModal = function(e){
@@ -1170,6 +1299,44 @@ var DEFAULT_PLANTS = [
     if(window._saveToBin) window._saveToBin();
   };
 
+  // ── PLANT DATABASE SEARCH ──
+  function filterDB(query) {
+    if (!query || query.length < 1) return [];
+    var q = query.toLowerCase();
+    return PLANT_DB.filter(function(p) {
+      return p.name.toLowerCase().indexOf(q) > -1;
+    }).slice(0, 8);
+  }
+
+  function renderSearchResults(results) {
+    var el = document.getElementById('plant-search-results');
+    if (!results.length) {
+      el.classList.remove('open');
+      return;
+    }
+    el.innerHTML = results.map(function(p, i) {
+      return '<div class="psr-item" onclick="selectFromDB('+i+')" data-idx="'+i+'">' +
+        '<span class="psr-emoji">'+p.emoji+'</span>' +
+        '<div><div class="psr-name">'+p.name+'</div>' +
+        '<div class="psr-meta">'+p.variety+' · '+p.notes+'</div></div>' +
+        '<span class="psr-days">'+p.days+' days</span>' +
+        '</div>';
+    }).join('');
+    el.classList.add('open');
+    window._dbSearchResults = results;
+  }
+
+  window.selectFromDB = function(idx) {
+    var p = window._dbSearchResults[idx];
+    if (!p) return;
+    document.getElementById('pe-name').value    = p.name;
+    document.getElementById('pe-emoji').value   = p.emoji;
+    document.getElementById('pe-variety').value = p.variety;
+    document.getElementById('pe-season').value  = p.season;
+    document.getElementById('plant-search-results').classList.remove('open');
+    document.getElementById('pe-search').value = '';
+  };
+
   window.renderGrid();
 })();
 </script>
@@ -1178,6 +1345,14 @@ var DEFAULT_PLANTS = [
 <div id="plant-modal-overlay" class="modal-hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;" onclick="closePlantModal(event)">
   <div id="plant-modal" style="background:var(--bark);border:1px solid rgba(200,146,58,0.4);border-radius:14px;padding:22px 24px;min-width:300px;max-width:380px;width:90%;position:relative;" onclick="event.stopPropagation()">
     <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--gold-lt);margin-bottom:16px;">Edit Plant</div>
+
+    <!-- Plant search -->
+    <div class="plant-search-wrap">
+      <input id="pe-search" type="text" placeholder="Search plant database… (e.g. tomato, basil)" autocomplete="off" />
+      <div id="plant-search-results"></div>
+    </div>
+    <div class="plant-search-divider">or fill manually</div>
+
     <div style="display:flex;flex-direction:column;gap:10px;">
       <label style="font-size:11px;color:var(--faint);font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;">
         Name
