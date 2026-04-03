@@ -212,16 +212,6 @@ python3 -m http.server 8080
 
 ---
 
-## File Structure
-
-```
-Garden 2026 Project/
-├── avon_lake_garden_final.html   ← Complete application (single file)
-└── README.md                     ← This file
-```
-
----
-
 ## Limitations
 
 - Weather data is fetched once on page load. Refresh the page to update weather conditions.
