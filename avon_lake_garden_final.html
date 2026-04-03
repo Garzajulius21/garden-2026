@@ -372,6 +372,7 @@ body.summer .su-hint { display:block; }
   display: none;
 }
 #plant-search-results.open { display: block; }
+#bed-tabs button:hover { opacity: 0.85; }
 .psr-item {
   padding: 8px 12px;
   cursor: pointer;
@@ -421,6 +422,9 @@ body.summer .su-hint { display:block; }
   </div>
 
   <div class="grid-section">
+    <div id="bed-tabs" style="display:flex;align-items:center;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
+      <!-- tabs rendered by JS -->
+    </div>
     <div class="grid-meta">
       <div class="grid-meta-left">🧭 North at top · runs East–West · south edge gets best afternoon sun</div>
       <div class="grid-meta-right">
@@ -746,7 +750,7 @@ function setSeason(s){
       _mist:    getWater().mist,
       _soak:    getWater().soak,
       _savedAt: Date.now(),  // ← the key to conflict detection
-      _plants:  window._plants
+      _state:   window._state   // full beds state replaces _plants
     });
   }
 
@@ -890,8 +894,16 @@ function setSeason(s){
         // This way if two devices load at different times, we compare apples to apples
         loadedAt = data.record._savedAt || Date.now();
         updateWaterDisplay();
-        if(data.record._plants && Array.isArray(data.record._plants)){
-          window._plants = data.record._plants;
+        if(data.record._state && data.record._state.beds){
+          window._state = data.record._state;
+          if(window.renderBedTabs) window.renderBedTabs();
+          if(window.updateGridDimensions) window.updateGridDimensions();
+          if(window.renderGrid) window.renderGrid();
+        } else if(data.record._plants && Array.isArray(data.record._plants)){
+          // Backwards compat: old single-bed saves
+          window._state.beds[0].plants = data.record._plants;
+          if(window.renderBedTabs) window.renderBedTabs();
+          if(window.updateGridDimensions) window.updateGridDimensions();
           if(window.renderGrid) window.renderGrid();
         }
       } else {
@@ -1180,7 +1192,26 @@ var DEFAULT_PLANTS = [
 // PLANT MANAGEMENT
 // ══════════════════════════════════════════════════
 (function(){
-  window._plants = JSON.parse(JSON.stringify(DEFAULT_PLANTS));
+  // ── STATE: multiple beds ──────────────────────────
+  window._state = {
+    activeBed: 0,
+    beds: [
+      {
+        id: 'bed-a',
+        name: 'Bed A',
+        cols: 12,
+        rows: 4,
+        plants: JSON.parse(JSON.stringify(DEFAULT_PLANTS))
+      }
+    ]
+  };
+
+  function activeBed() {
+    return window._state.beds[window._state.activeBed];
+  }
+  function activePlants() {
+    return activeBed().plants;
+  }
 
   var editingId = null;
 
@@ -1276,7 +1307,7 @@ var DEFAULT_PLANTS = [
     old.forEach(function(el){ el.parentNode.removeChild(el); });
     var frag = document.createDocumentFragment();
     var tmp = document.createElement('div');
-    window._plants.forEach(function(p){
+    activePlants().forEach(function(p){
       tmp.innerHTML = renderCell(p);
       if(tmp.firstElementChild) frag.appendChild(tmp.firstElementChild);
     });
@@ -1286,7 +1317,7 @@ var DEFAULT_PLANTS = [
   window.openPlantEdit = function(e, pid){
     e.stopPropagation();
     editingId = pid;
-    var p = window._plants.find(function(x){ return x.id === pid; });
+    var p = activePlants().find(function(x){ return x.id === pid; });
     if(!p) return;
     document.getElementById('pe-name').value = p.name;
     document.getElementById('pe-variety').value = p.variety || '';
@@ -1323,7 +1354,7 @@ var DEFAULT_PLANTS = [
 
   window.savePlantEdit = function(){
     if(!editingId) return;
-    var p = window._plants.find(function(x){ return x.id === editingId; });
+    var p = activePlants().find(function(x){ return x.id === editingId; });
     if(!p) return;
     p.name    = document.getElementById('pe-name').value.trim();
     p.variety = document.getElementById('pe-variety').value.trim();
@@ -1337,7 +1368,7 @@ var DEFAULT_PLANTS = [
 
   window.clearPlantCell = function(){
     if(!editingId) return;
-    var p = window._plants.find(function(x){ return x.id === editingId; });
+    var p = activePlants().find(function(x){ return x.id === editingId; });
     if(!p) return;
     p.name    = '';
     p.variety = '';
@@ -1387,6 +1418,198 @@ var DEFAULT_PLANTS = [
     document.getElementById('pe-search').value = '';
   };
 
+  // ── BED TABS ──────────────────────────────────────
+  window.renderBedTabs = function() {
+    var el = document.getElementById('bed-tabs');
+    if (!el) return;
+    var html = window._state.beds.map(function(bed, i) {
+      var isActive = i === window._state.activeBed;
+      return '<button onclick="switchBed('+i+')" style="' +
+        'padding:5px 14px;border-radius:6px 6px 0 0;font-family:\'DM Mono\',monospace;font-size:10px;' +
+        'letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;' +
+        'border:1px solid ' + (isActive ? 'rgba(200,146,58,0.6)' : 'rgba(200,146,58,0.2)') + ';' +
+        'border-bottom:' + (isActive ? '1px solid var(--bark)' : '1px solid rgba(200,146,58,0.2)') + ';' +
+        'background:' + (isActive ? 'var(--bark)' : 'rgba(200,146,58,0.05)') + ';' +
+        'color:' + (isActive ? 'var(--gold-lt)' : 'var(--faint)') + ';' +
+        'position:relative;">' +
+        bed.name +
+        (window._state.beds.length > 1 ?
+          ' <span onclick="deleteBed(event,'+i+')" style="margin-left:6px;opacity:0.5;font-size:9px;" title="Remove bed">×</span>' : '') +
+        '</button>';
+    }).join('');
+    // Add "+" button
+    html += '<button onclick="addBed()" style="padding:5px 10px;border-radius:6px;font-family:\'DM Mono\',monospace;' +
+      'font-size:12px;cursor:pointer;border:1px dashed rgba(200,146,58,0.3);background:transparent;' +
+      'color:var(--faint);transition:all 0.15s;" title="Add new bed">+</button>';
+    // Bed settings button (rename/resize active bed)
+    html += '<button onclick="openBedSettings()" style="margin-left:auto;padding:5px 10px;border-radius:6px;' +
+      'font-family:\'DM Mono\',monospace;font-size:10px;cursor:pointer;border:1px solid rgba(200,146,58,0.2);' +
+      'background:transparent;color:var(--faint);letter-spacing:1px;text-transform:uppercase;transition:all 0.15s;" ' +
+      'title="Rename or resize this bed">⚙ Settings</button>';
+    el.innerHTML = html;
+  };
+
+  // ── BED SWITCHING AND MANAGEMENT ─────────────────
+  window.switchBed = function(idx) {
+    window._state.activeBed = idx;
+    window.renderBedTabs();
+    window.updateGridDimensions();
+    window.renderGrid();
+  };
+
+  window.addBed = function() {
+    var n = window._state.beds.length + 1;
+    var letters = 'ABCDEFGHIJKLMNOP';
+    var bedName = 'Bed ' + (letters[n-1] || n);
+    var newBed = {
+      id: 'bed-' + Date.now(),
+      name: bedName,
+      cols: 8,
+      rows: 4,
+      plants: []
+    };
+    // Fill new bed with blank plants
+    for (var r = 1; r <= newBed.rows; r++) {
+      for (var c = 1; c <= newBed.cols; c++) {
+        newBed.plants.push({
+          id: newBed.id+'-c'+c+'r'+r,
+          col: c, row: r, rowSpan: 1, colSpan: 1,
+          name: '', variety: '', emoji: '', type: 'blank', season: 'both'
+        });
+      }
+    }
+    window._state.beds.push(newBed);
+    window._state.activeBed = window._state.beds.length - 1;
+    window.renderBedTabs();
+    window.updateGridDimensions();
+    window.renderGrid();
+    if (window._saveToBin) window._saveToBin();
+  };
+
+  window.deleteBed = function(e, idx) {
+    e.stopPropagation();
+    if (window._state.beds.length <= 1) return;
+    if (!confirm('Remove "' + window._state.beds[idx].name + '"? This cannot be undone.')) return;
+    window._state.beds.splice(idx, 1);
+    if (window._state.activeBed >= window._state.beds.length) {
+      window._state.activeBed = window._state.beds.length - 1;
+    }
+    window.renderBedTabs();
+    window.updateGridDimensions();
+    window.renderGrid();
+    if (window._saveToBin) window._saveToBin();
+  };
+
+  // ── GRID DIMENSION UPDATE ────────────────────────
+  window.updateGridDimensions = function() {
+    var bed = activeBed();
+    var plot = document.getElementById('plot');
+    if (!plot) return;
+
+    // Update CSS grid template
+    plot.style.gridTemplateColumns = 'var(--LW) repeat(' + bed.cols + ', var(--CW))';
+    plot.style.gridTemplateRows = '22px repeat(' + bed.rows + ', var(--CH))';
+
+    // Update min-width on grid-left for mobile scroll
+    var gridLeft = document.querySelector('.grid-left');
+    if (gridLeft) {
+      gridLeft.style.minWidth = 'calc(var(--LW) + ' + bed.cols + ' * var(--CW))';
+    }
+
+    // Show/hide zone fills and dividers — only for the default 12x4 layout
+    var isDefault = (bed.cols === 12 && bed.rows === 4);
+    var zoneEls = document.querySelectorAll('.zfill, .zdiv, .zone-strip');
+    zoneEls.forEach(function(el) { el.style.display = isDefault ? '' : 'none'; });
+
+    // Re-render column headers and row labels
+    renderGridHeaders(bed.cols, bed.rows);
+  };
+
+  // ── COLUMN/ROW HEADER RE-RENDERING ───────────────
+  function renderGridHeaders(cols, rows) {
+    var plot = document.getElementById('plot');
+    // Remove old headers
+    plot.querySelectorAll('.ch, .rh').forEach(function(el) { el.parentNode.removeChild(el); });
+    // Add column headers
+    var frag = document.createDocumentFragment();
+    var tmp = document.createElement('div');
+    // Corner cell
+    tmp.innerHTML = '<div class="ch" style="grid-column:1;grid-row:1;"></div>';
+    frag.appendChild(tmp.firstElementChild);
+    for (var c = 1; c <= cols; c++) {
+      tmp.innerHTML = '<div class="ch" style="grid-column:'+(c+1)+';grid-row:1;">'+c+'</div>';
+      frag.appendChild(tmp.firstElementChild);
+    }
+    // Row labels
+    for (var r = 1; r <= rows; r++) {
+      tmp.innerHTML = '<div class="rh" style="grid-column:1;grid-row:'+(r+1)+';">'+r+'</div>';
+      frag.appendChild(tmp.firstElementChild);
+    }
+    plot.appendChild(frag);
+  }
+
+  // ── BED SETTINGS MODAL ───────────────────────────
+  window.openBedSettings = function() {
+    var bed = activeBed();
+    document.getElementById('bs-name').value = bed.name;
+    document.getElementById('bs-cols').value = bed.cols;
+    document.getElementById('bs-rows').value = bed.rows;
+    document.getElementById('bed-settings-overlay').classList.remove('modal-hidden');
+  };
+
+  window.closeBedSettings = function(e) {
+    if (e && e.target !== document.getElementById('bed-settings-overlay')) return;
+    document.getElementById('bed-settings-overlay').classList.add('modal-hidden');
+  };
+
+  window.saveBedSettings = function() {
+    var bed = activeBed();
+    var newName = document.getElementById('bs-name').value.trim() || bed.name;
+    var newCols = Math.max(2, Math.min(20, parseInt(document.getElementById('bs-cols').value) || bed.cols));
+    var newRows = Math.max(1, Math.min(12, parseInt(document.getElementById('bs-rows').value) || bed.rows));
+
+    bed.name = newName;
+
+    // Resize plants array to match new dimensions
+    // Remove plants outside new bounds
+    bed.plants = bed.plants.filter(function(p) {
+      return p.col <= newCols && p.row <= newRows;
+    });
+    // Trim any multi-span plants that now exceed bounds
+    bed.plants.forEach(function(p) {
+      if (p.col + (p.colSpan||1) - 1 > newCols) p.colSpan = 1;
+      if (p.row + (p.rowSpan||1) - 1 > newRows) p.rowSpan = 1;
+    });
+
+    // Add blank plants for any new cells
+    for (var r = 1; r <= newRows; r++) {
+      for (var c = 1; c <= newCols; c++) {
+        var exists = bed.plants.some(function(p) {
+          return p.col === c && p.row === r;
+        });
+        if (!exists) {
+          bed.plants.push({
+            id: bed.id+'-c'+c+'r'+r+'-'+Date.now(),
+            col: c, row: r, rowSpan: 1, colSpan: 1,
+            name: '', variety: '', emoji: '', type: 'blank', season: 'both'
+          });
+        }
+      }
+    }
+
+    bed.cols = newCols;
+    bed.rows = newRows;
+
+    document.getElementById('bed-settings-overlay').classList.add('modal-hidden');
+    window.renderBedTabs();
+    window.updateGridDimensions();
+    window.renderGrid();
+    if (window._saveToBin) window._saveToBin();
+  };
+
+  // ── INIT ──────────────────────────────────────────
+  window.renderBedTabs();
+  window.updateGridDimensions();
   window.renderGrid();
 })();
 </script>
@@ -1429,6 +1652,34 @@ var DEFAULT_PLANTS = [
       <button onclick="clearPlantCell()" style="padding:7px 14px;border-radius:6px;border:1px solid rgba(218,54,51,0.4);background:rgba(218,54,51,0.1);color:#ff7b7b;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">Clear Cell</button>
       <button onclick="closePlantModal()" style="padding:7px 14px;border-radius:6px;border:1px solid rgba(200,146,58,0.3);background:transparent;color:var(--faint);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">Cancel</button>
       <button onclick="savePlantEdit()" style="padding:7px 14px;border-radius:6px;border:none;background:var(--gold);color:var(--soil);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-weight:600;">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BED SETTINGS MODAL ══ -->
+<div id="bed-settings-overlay" class="modal-hidden" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;" onclick="closeBedSettings(event)">
+  <div id="bed-settings-modal" style="background:var(--bark);border:1px solid rgba(200,146,58,0.4);border-radius:14px;padding:22px 24px;min-width:280px;max-width:340px;width:90%;" onclick="event.stopPropagation()">
+    <div style="font-family:'Playfair Display',serif;font-size:15px;color:var(--gold-lt);margin-bottom:16px;">Bed Settings</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <label style="font-size:11px;color:var(--faint);font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;">
+        Bed Name
+        <input id="bs-name" type="text" style="display:block;width:100%;margin-top:4px;background:rgba(200,146,58,0.1);border:1px solid rgba(200,146,58,0.3);border-radius:6px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;outline:none;" />
+      </label>
+      <label style="font-size:11px;color:var(--faint);font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;">
+        Width (columns = feet)
+        <input id="bs-cols" type="number" min="2" max="20" style="display:block;width:100%;margin-top:4px;background:rgba(200,146,58,0.1);border:1px solid rgba(200,146,58,0.3);border-radius:6px;color:var(--cream);font-family:'DM Mono',sans-serif;font-size:13px;padding:7px 10px;outline:none;" />
+      </label>
+      <label style="font-size:11px;color:var(--faint);font-family:'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase;">
+        Depth (rows = feet)
+        <input id="bs-rows" type="number" min="1" max="12" style="display:block;width:100%;margin-top:4px;background:rgba(200,146,58,0.1);border:1px solid rgba(200,146,58,0.3);border-radius:6px;color:var(--cream);font-family:'DM Mono',sans-serif;font-size:13px;padding:7px 10px;outline:none;" />
+      </label>
+      <div style="font-size:10px;color:var(--faint);font-style:italic;line-height:1.5;">
+        Shrinking the grid removes plants in removed columns/rows. Expanding adds blank cells.
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end;">
+      <button onclick="closeBedSettings()" style="padding:7px 14px;border-radius:6px;border:1px solid rgba(200,146,58,0.3);background:transparent;color:var(--faint);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">Cancel</button>
+      <button onclick="saveBedSettings()" style="padding:7px 14px;border-radius:6px;border:none;background:var(--gold);color:var(--soil);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-weight:600;">Save</button>
     </div>
   </div>
 </div>
