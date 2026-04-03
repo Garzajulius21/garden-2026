@@ -1866,6 +1866,13 @@ var DEFAULT_PLANTS = [
     var dl = document.getElementById('hl-plant-list');
     if (!dl) return;
     var names = {};
+    // Pull from PLANT_DB first (lower priority — grid plants override)
+    if (typeof PLANT_DB !== 'undefined') {
+      PLANT_DB.forEach(function(p) {
+        if (p.name) names[p.name] = p.emoji || '';
+      });
+    }
+    // Grid plants override PLANT_DB entries
     if (window._state && window._state.beds) {
       window._state.beds.forEach(function(bed) {
         (bed.plants || []).forEach(function(p) {
@@ -1876,14 +1883,14 @@ var DEFAULT_PLANTS = [
     dl.innerHTML = Object.keys(names).map(function(n) {
       return '<option value="'+n+'">';
     }).join('');
-    // Auto-fill emoji when plant name matches
+    // Auto-fill emoji when plant name matches — always update on match
     var plantInput = document.getElementById('hl-plant');
     if (plantInput && !plantInput._wired) {
       plantInput.addEventListener('input', function() {
         var match = Object.keys(names).filter(function(n) { return n.toLowerCase() === plantInput.value.toLowerCase(); })[0];
         if (match) {
           var ej = document.getElementById('hl-emoji');
-          if (ej && !ej.value) ej.value = names[match];
+          if (ej) ej.value = names[match];
         }
       });
       plantInput._wired = true;
@@ -1990,6 +1997,9 @@ var DEFAULT_PLANTS = [
 
   // ── Delete harvest ──────────────────────────────
   window.deleteHarvest = function(id) {
+    var entry = window._harvests.filter(function(h){ return h.id === id; })[0];
+    var label = entry ? (entry.plant + ' — ' + entry.qty + ' ' + entry.unit + ' on ' + entry.date) : 'this entry';
+    if (!confirm('Remove harvest log:\n' + label + '\n\nThis cannot be undone.')) return;
     window._harvests = window._harvests.filter(function(h){ return h.id !== id; });
     window._renderHarvests();
     if (window._saveToBin) window._saveToBin();
