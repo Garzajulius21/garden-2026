@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="My Garden 2026">
@@ -21,25 +21,17 @@
     align-items: stretch !important;
   }
 
-  /* ─ THE FIX ─
-     touch-action must live on the SCROLL CONTAINER (.grid-left),
-     not on the inner content (.plot). Without this iOS ignores the
-     horizontal swipe and hands it to the page instead.
-     overscroll-behavior-x: contain stops the page from stealing the
-     gesture once the grid hits its scroll boundary. */
-  /* Older iOS Safari can block child scroll if parent has overflow:hidden.
-     -webkit-overflow-scrolling on the card unlocks it. */
-  .card { -webkit-overflow-scrolling: touch; }
-
+  /* Horizontal scroll container for the grid.
+     touch-action: pan-x ONLY — critical for iOS PWA.
+     pan-x pan-y tells iOS "I handle both directions" which kills vertical
+     page scroll whenever a finger lands on the grid area.
+     pan-x alone lets vertical swipes pass through to the page. */
   .grid-left {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    touch-action: pan-x pan-y;
+    touch-action: pan-x;
     overscroll-behavior-x: contain;
-    /* Force GPU compositing layer — fixes scroll stutter on older iPhones */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
   }
 
   /* Minimum width so cells don't collapse */
@@ -77,8 +69,8 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Smooth page scroll on iOS */
-html { -webkit-overflow-scrolling: touch; }
+/* Page scroll on iOS — body needed for PWA standalone mode */
+html, body { -webkit-overflow-scrolling: touch; }
 </style>
 <title>My 2026 Garden Plot</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -855,7 +847,7 @@ function setSeason(s){
 // ══════════════════════════════════════════════════
 (function(){
   var OWM='YOUR_OPENWEATHERMAP_API_KEY'; // OpenWeatherMap API key
-  var ZIP='YOUR_ZIP_CODE';               // e.g. '10001'
+  var ZIP='YOUR_ZIP_CODE';
   function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
   function badge(txt,cls){var b=document.createElement('span');b.className='wb-badge '+(cls||'');b.textContent=txt;return b;}
   function wbItem(label,val,sub){
@@ -918,7 +910,7 @@ function setSeason(s){
 // with Pre-Flight Conflict Check before every save
 // ══════════════════════════════════════════════════
 (function(){
-  var API_KEY  = 'YOUR_JSONBIN_API_KEY'; // JSONBin Master Key
+  var API_KEY  = 'YOUR_JSONBIN_API_KEY'; // JSONBin key
   var STORE_KEY= 'garden2026_bin_id';
   var binId    = localStorage.getItem(STORE_KEY);
   var saveTimer= null;
