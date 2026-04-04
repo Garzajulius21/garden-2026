@@ -1,5 +1,5 @@
 # Garden OS — Precision Horticulture Dashboard
-### A Cloud-Synced, PWA Garden Management System for High-Yield Urban Gardening
+### A Cloud-Synced, PWA Garden Management System for Any Size Plot
 
 ![Status](https://img.shields.io/badge/Status-Production--Ready-success)
 ![Platform](https://img.shields.io/badge/Platform-Web%20%2B%20Mobile-blue)
@@ -11,7 +11,7 @@
 
 ## Overview
 
-Garden OS is a Progressive Web App (PWA) built to manage a 4' × 12' vegetable plot at a community garden. It solves a specific problem: multiple people managing the same garden plot from different devices — phones in the field, desktops at home — without their data colliding or overwriting each other.
+Garden OS is a Progressive Web App (PWA) built to manage vegetable garden plots of any size — from a small 2×2 raised bed up to a 20×20 in-ground plot. Multiple beds are supported simultaneously, each independently sized and named. It solves a specific problem: multiple people managing the same garden from different devices — phones in the field, desktops at home — without their data colliding or overwriting each other.
 
 The application combines real-time local weather telemetry, a persistent cloud state engine, companion planting intelligence, harvest tracking, and a visual plot blueprint — all in a small set of static files with no framework, no build step, and no dependencies.
 
@@ -90,7 +90,7 @@ Every cell in the grid has a hover-reveal edit button. Clicking it opens a modal
 
 ### Multi-Bed Support
 
-The app supports multiple garden beds with a tab switcher. Each bed has independently configurable dimensions (up to 20 columns × 20 rows). The grid, zone strip, column headers, and dimension label all update dynamically when a bed is resized or switched.
+The app supports multiple garden beds with a tab switcher. Each bed has independently configurable dimensions — any size from 2×1 up to 20×20, where each column and row represents one foot. The grid, zone strip, column headers, and dimension label all update dynamically when a bed is resized or switched. There is no fixed plot size — the grid generates entirely from the configured dimensions.
 
 ### Companion Planting Intelligence
 
@@ -209,16 +209,16 @@ Open `index.html` in a text editor and find the two configuration blocks:
 
 **Weather (around line 846):**
 ```javascript
-var OWM = 'YOUR_OPENWEATHERMAP_API_KEY';
-var ZIP = 'YOUR_ZIP_CODE';
+var OWM = 'YOUR_OPENWEATHERMAP_API_KEY'; // OpenWeatherMap API key
+var ZIP = 'YOUR_ZIP_CODE';               // e.g. '10001'
 ```
 
 **Cloud sync (around line 910):**
 ```javascript
-var API_KEY = 'YOUR_JSONBIN_API_KEY';
+var API_KEY = 'YOUR_JSONBIN_API_KEY'; // JSONBin Master Key
 ```
 
-The JSONBin bin ID is created automatically on first load and stored in `localStorage` — no manual bin setup needed.
+The JSONBin bin ID is created automatically on first load and stored in `localStorage` — no manual bin setup needed. Weather is fetched for the zip code provided.
 
 ### Running Locally
 
