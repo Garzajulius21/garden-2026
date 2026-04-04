@@ -12,8 +12,11 @@
 /* ── MOBILE FIXES ── */
 @media (max-width: 900px) {
 
-  /* Smaller cells on mobile — less distance to scroll */
+  /* Smaller cells on mobile */
   :root { --CW: 48px; --CH: 70px; }
+
+  /* Remove overflow:hidden from card — lets child scroll containers work on iOS */
+  .card { overflow: visible; }
 
   /* Stack blueprint on top, tracker below */
   .grid-and-tracker {
@@ -21,47 +24,44 @@
     align-items: stretch !important;
   }
 
-  /* Horizontal scroll container for the grid.
-     touch-action: pan-x ONLY — critical for iOS PWA.
-     pan-x pan-y tells iOS "I handle both directions" which kills vertical
-     page scroll whenever a finger lands on the grid area.
-     pan-x alone lets vertical swipes pass through to the page. */
-  .grid-left {
-    overflow-x: auto;
+  /* grid-left is just a column layout — NOT the scroll container */
+  .grid-left { width: 100%; }
+
+  /* ── THE SCROLL CONTAINER ─────────────────────────────────────────────
+     Wraps ONLY the plot and zone-strip.
+     Simple block-level overflow-x: scroll — most reliable on iOS Safari.
+     No touch-action: let iOS detect gesture direction naturally.
+     align-items: flex-start: prevents flex stretch from shrinking the
+     CSS Grid cells to the container width (would break the layout).
+     ─────────────────────────────────────────────────────────────────── */
+  .plot-scroller {
+    overflow-x: scroll;
+    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    touch-action: pan-x;
+    align-items: flex-start;
     overscroll-behavior-x: contain;
+    padding-bottom: 6px; /* room for scroll indicator */
   }
 
-  /* Minimum width so cells don't collapse */
-  .plot      { min-width: calc(var(--LW) + 12 * var(--CW)); }
-  .zone-strip{ min-width: calc(var(--LW) + 12 * var(--CW)); }
+  /* Hard min-width keeps cells from collapsing inside the scroll view */
+  .plot      { min-width: calc(var(--LW) + 12 * var(--CW)); flex-shrink: 0; }
+  .zone-strip{ min-width: calc(var(--LW) + 12 * var(--CW)); flex-shrink: 0; }
 
   /* Tracker full width below */
-  .hp {
-    width: 100% !important;
-    max-height: 380px;
-  }
+  .hp { width: 100% !important; max-height: 380px; }
 
-  /* Hide callout bar on small screens */
+  /* Hide callout bar */
   .callout-bar { display: none; }
 
   /* Stack the meta row */
-  .grid-meta {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .grid-meta-right {
-    width: 100%;
-    justify-content: space-between;
-  }
+  .grid-meta { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .grid-meta-right { width: 100%; justify-content: space-between; }
 
   .grid-section { padding: 14px 12px 10px; }
 }
 
-/* Season buttons — large easy tap targets on all screen sizes */
+/* Season buttons — large tap targets on all screen sizes */
 .season-btn {
   min-height: 40px;
   min-width: 80px;
@@ -131,6 +131,8 @@ body.summer .sp-only { display:none !important; }
   gap: 16px;
 }
 .grid-left { flex-shrink: 0; display: flex; flex-direction: column; gap: 7px; }
+/* Scroll wrapper — transparent on desktop, becomes horizontal scroll container on mobile */
+.plot-scroller { display: flex; flex-direction: column; gap: 7px; }
 
 /* The plot */
 .plot {
@@ -580,6 +582,8 @@ body.summer .sp-only { display:none !important; }
       <!-- ══ LEFT: BLUEPRINT ══ -->
       <div class="grid-left">
 
+        <!-- plot-scroller: horizontal scroll container on mobile (plot + zone-strip only) -->
+        <div class="plot-scroller">
 
         <div class="plot" id="plot">
           <div class="zfill zf-sp"></div>
@@ -615,7 +619,9 @@ body.summer .sp-only { display:none !important; }
           <div class="zs-b zs-su">Summer Staples · Cols 5–9</div>
           <div class="zs-b zs-gap3">—</div>
           <div class="zs-b zs-cl">Trellis / Trailing · 11–12</div>
-        </div>
+        </div><!-- /zone-strip -->
+
+        </div><!-- /plot-scroller -->
 
         <!-- ══ COMPANION PLANTING PANEL ══ -->
         <div id="companion-panel">
