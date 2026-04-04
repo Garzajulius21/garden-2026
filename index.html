@@ -290,6 +290,15 @@ body.summer .sp-only { display:none !important; }
   0%,100% { border-color: rgba(220,60,60,0.7); }
   50%      { border-color: rgba(220,60,60,0.2); }
 }
+.weather-bar.rain-alert {
+  background: rgba(30,90,190,0.22);
+  border-color: rgba(80,150,240,0.65);
+  animation: pulse-rain 2s ease-in-out infinite;
+}
+@keyframes pulse-rain {
+  0%,100% { border-color: rgba(80,150,240,0.65); }
+  50%      { border-color: rgba(80,150,240,0.2); }
+}
 .wb-item { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 .wb-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--faint); }
 .wb-val   { font-size: 12px; color: var(--cream); font-weight: 500; }
@@ -874,10 +883,13 @@ function setSeason(s){
     var low=Math.round(Math.min.apply(null,lows));
     var sevWords=['thunderstorm','tornado','severe'];
     var hasSev=f.list.some(function(i){return sevWords.some(function(w){return i.weather[0].description.toLowerCase().indexOf(w)>-1;});});
+    var rainWords=['rain','drizzle','shower'];
+    var isRain=rainWords.some(function(w){return desc.toLowerCase().indexOf(w)>-1;})||parseFloat(rainIn)>=0.1;
     var isFrost=low<=36, isWind=gust>30, isAlert=isFrost||isWind||hasSev;
     bar.innerHTML='';
+    bar.classList.remove('alert','rain-alert');
     if(isAlert){bar.classList.add('alert');var ic=document.createElement('span');ic.className='wb-alert-icon';ic.textContent='⚠️';bar.appendChild(ic);}
-    else{bar.classList.remove('alert');}
+    else if(isRain){bar.classList.add('rain-alert');var ic=document.createElement('span');ic.className='wb-alert-icon';ic.textContent='🌧️';bar.appendChild(ic);}
     bar.appendChild(wbItem('My Garden',temp+'°F','feels '+feels+'°F'));
     var lowEl=wbItem('Low Tonight',low+'°F','');
     if(isFrost)lowEl.appendChild(badge('❄️ Frost Warning','frost'));
