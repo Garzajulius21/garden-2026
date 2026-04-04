@@ -11,7 +11,7 @@
 
 ## Overview
 
-Garden OS is a Progressive Web App (PWA) built to manage vegetable garden plots of any size — from a small 2×2 raised bed up to a 20×20 in-ground plot. Multiple beds are supported simultaneously, each independently sized and named. It solves a specific problem: multiple people managing the same garden from different devices — phones in the field, desktops at home — without their data colliding or overwriting each other.
+Garden OS is a Progressive Web App (PWA) built to manage vegetable garden plots of any size from a small 2×2 raised bed up to a 20×20 in-ground plot. Multiple beds are supported simultaneously, each independently sized and named. It solves a specific problem: multiple people managing the same garden from different devices — phones in the field, desktops at home — without their data colliding or overwriting each other.
 
 The application combines real-time local weather telemetry, a persistent cloud state engine, companion planting intelligence, harvest tracking, and a visual plot blueprint — all in a small set of static files with no framework, no build step, and no dependencies.
 
