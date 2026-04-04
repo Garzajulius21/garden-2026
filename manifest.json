@@ -1,0 +1,25 @@
+{
+  "name": "Garden OS 2026",
+  "short_name": "Garden OS",
+  "description": "Precision horticulture dashboard — track, plan, and manage your garden plot",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#2C1A0E",
+  "theme_color": "#3D5A2C",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,8 +1,9 @@
 # Garden OS — Precision Horticulture Dashboard
-### A Cloud-Synced, API-Driven Management System for High-Yield Urban Gardening
+### A Cloud-Synced, PWA Garden Management System for High-Yield Urban Gardening
 
 ![Status](https://img.shields.io/badge/Status-Production--Ready-success)
 ![Platform](https://img.shields.io/badge/Platform-Web%20%2B%20Mobile-blue)
+![PWA](https://img.shields.io/badge/PWA-Offline--Ready-blueviolet)
 ![Dependencies](https://img.shields.io/badge/Dependencies-None%20(client--side)-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -10,9 +11,9 @@
 
 ## Overview
 
-Garden OS is a single-page application (SPA) built to manage a 4' × 12' vegetable plot for a community garden plot. It solves a specific problem: multiple people managing the same garden plot from different devices — phones in the field, desktops at home — without their data colliding or overwriting each other.
+Garden OS is a Progressive Web App (PWA) built to manage a 4' × 12' vegetable plot at a community garden. It solves a specific problem: multiple people managing the same garden plot from different devices — phones in the field, desktops at home — without their data colliding or overwriting each other.
 
-The application combines real-time local weather telemetry, a persistent cloud state engine, and a visual plot blueprint into a single HTML file that works as well on an iPhone in direct sunlight as it does on a desktop browser.
+The application combines real-time local weather telemetry, a persistent cloud state engine, companion planting intelligence, harvest tracking, and a visual plot blueprint — all in a small set of static files with no framework, no build step, and no dependencies.
 
 ---
 
@@ -20,118 +21,146 @@ The application combines real-time local weather telemetry, a persistent cloud s
 
 ### The Problem It Solves
 
-Managing a shared garden plot across multiple devices and users creates a classic distributed state problem. If two people open the app simultaneously — one on a phone standing in the garden, one on a laptop at home — and both make changes, a naive save would silently overwrite one person's work. Garden OS was built to handle this correctly.
+Managing a shared garden plot across multiple devices creates a classic distributed state problem. If two people open the app simultaneously and both make changes, a naive save would silently overwrite one person's work. Garden OS handles this correctly with a timestamp handshake conflict detection system.
 
-The second problem was environmental awareness. A garden manager checking the app should immediately know whether there is a frost risk tonight or dangerously high winds forecasted — information that changes watering and covering decisions. Pulling that from a phone's weather app separately is friction. Garden OS eliminates that friction by pulling hyper-local weather data automatically.
+The second problem was environmental awareness — a garden manager should immediately know whether there is a frost risk tonight or dangerous winds forecasted. Garden OS eliminates that friction by pulling hyper-local weather data automatically and sending push notifications even when the app is closed.
 
-### Architecture: Three Services, One File
+### Architecture: Three Services, Four Files
 
-The application was deliberately built as a single HTML file with no build step, no framework, and no dependencies. This keeps it maximally portable — it can be opened directly in a browser, deployed to a CDN, or saved to a phone's home screen as a Progressive Web App.
+The application is built as a small set of static files with no build step and no framework. This keeps it maximally portable — deployable to any CDN or saved to a phone's home screen as a PWA.
 
-Three external services are orchestrated:
+**Files:**
+| File | Purpose |
+|------|---------|
+| `index.html` | The entire application — UI, logic, state, styles |
+| `sw.js` | Service worker — caches the app for offline use |
+| `manifest.json` | PWA manifest — name, colors, icons, display mode |
+| `icon.svg` | App icon — garden-themed SVG for home screen |
+
+**Three external services are orchestrated:**
 
 **1. OpenWeatherMap API (Telemetry)**
 
-Weather data is fetched on page load from the OpenWeatherMap One Call 3.0 API, targeting the GPS coordinates of the garden location. The app pulls current temperature, wind speed, precipitation, and overnight forecast data. This feeds two alert conditions evaluated in real time:
+Weather data is fetched on page load targeting the GPS coordinates of the garden. The app pulls current temperature, wind speed, precipitation, and overnight forecast data, feeding two real-time alert conditions:
 
-- **Frost Alert**: triggered when overnight low temperatures are forecast at or below 36°F — a threshold chosen for leafy vegetables that can suffer cold damage before a true frost
-- **Wind Alert**: triggered when gusts exceed 30 mph — critical for trellis-supported crops like cucumbers and climbing beans
+- **Frost Alert** — triggered when overnight lows are forecast at or below 36°F
+- **Wind Alert** — triggered when gusts exceed 30 mph
 
-When either alert is active, the weather bar in the header switches to a pulsing red state, making it immediately visible without reading numbers.
+When either alert is active, the weather bar in the header switches to a pulsing red state. Browser push notifications fire at 6 PM daily when alerts are enabled, even when the app is closed.
 
 **2. JSONBin.io (State Persistence)**
 
-All persistent state — watering logs, harvest records, user notes, last-modified timestamps — is stored in a JSONBin.io NoSQL bin. This acts as a global source of truth that any device can read from and write to over HTTPS. The app reads state on load and writes on user action.
+All persistent state — plant layouts, watering logs, harvest records, bed configurations — is stored in a JSONBin.io NoSQL bin. This acts as a global source of truth readable and writable from any device over HTTPS.
 
 **3. Netlify (Deployment)**
 
-The application is deployed via Netlify's global CDN for fast load times and automatic HTTPS, which is required for the secure API calls. The single-file architecture makes deployment trivial — drop the HTML file and Netlify handles the rest.
+The application is deployed via Netlify's global CDN for fast load times and automatic HTTPS, required for service worker registration and API calls.
 
 ### Conflict-Aware Synchronization
 
-The most technically careful piece of the application is its write-conflict prevention. The mechanism works as follows:
+The write-conflict prevention mechanism works as follows:
 
-1. When the app loads, it records the current time as `loadedAt` — the session start timestamp
-2. When a user triggers a save (logging a watering event, recording a harvest, etc.), the app first makes a `GET` request to JSONBin to fetch the bin's `metadata.createdAt` field — the timestamp of the last write
-3. If the server timestamp is newer than `loadedAt`, it means someone else has written data since this session began. The save is aborted and a "Conflict Detected" alert is shown, prompting the user to refresh and sync first
-4. If the server timestamp is equal to or older than `loadedAt`, the write proceeds via `PUT`
+1. On load, the app records the `_savedAt` timestamp embedded in the cloud record as `loadedAt`
+2. On save, the app first GETs the latest record and reads its `_savedAt` value
+3. If `server._savedAt > loadedAt`, someone else saved since this session began — the save is blocked and the user is prompted to refresh
+4. If no conflict, the PUT proceeds and `loadedAt` is updated to the new `_savedAt`
 
-This is a timestamp handshake pattern — lightweight, stateless, and sufficient for the concurrency level of a two-person garden management scenario. It prevents silent data loss without requiring a WebSocket connection or operational transform algorithm.
+This is a lightweight timestamp handshake sufficient for a two-person garden management scenario, with no WebSocket or operational transform required.
+
+### Offline Write Queue
+
+If a save fails because the device is offline, the payload is stored in `localStorage` under a pending write key. The moment the browser comes back online, the queued write is automatically flushed to JSONBin. A sticky red banner at the top of the page indicates offline status in real time.
 
 ### Visual Plot Blueprint
 
-The 4' × 12' plot is rendered as a CSS Grid — 12 columns (each representing one foot of horizontal space) and 4 rows (each representing one foot of depth). Column widths and row heights are defined as CSS custom properties (`--CW: 58px`, `--CH: 85px`) so the grid scales predictably.
+The plot is rendered as a CSS Grid — columns represent feet of horizontal space, rows represent feet of depth. Column widths and row heights are defined as CSS custom properties so the grid scales predictably across screen sizes (cells shrink to 48px on mobile).
 
-The plot is divided into planting zones, each overlaid with a distinct color fill and labeled strip:
+The grid is fully data-driven — no hardcoded HTML for plant cells. All plants are stored in a `plants` array per bed and rendered by `renderGrid()` on every state change.
 
-- **Spring zone** (columns 1-3): Cool-season crops — spinach, lettuce, radishes
-- **Mid-season zone** (columns 4): Transitional space
-- **Summer zone** (columns 5-9): Heat-loving crops — tomatoes, peppers, cucumbers
-- **Cool/Late zone** (columns 11-12): Second cool-season planting or trellised crops
+Specialty cell types handle crops with unique display requirements:
+- **Tomato cells** — cage identifier, variety name, SVG cage graphic
+- **Pepper cells** — stake label, support line indicator
+- **A-frame trellis cells** — crosshatch background, ridge label, directional plant icons
+- **Onion cells** — 2×2 subgrid showing individual bulb positions
+- **Squash cells** — side-by-side dual-plant layout
 
-Each cell in the grid renders the plant emoji, common name, variety, and planting notes for whatever occupies that position. Specialty cell types were built for crops with unique requirements:
-- **Tomato cells** include cage identifier, variety name, and a visual indicator for the support structure
-- **Pepper cells** show stake label and support line
-- **A-frame trellis cells** have a subtle crosshatch background pattern indicating vertical growing space
-- **Onion cells** render a 2×2 subgrid showing individual bulb positions
+### Dynamic Plant Management
 
-Zone boundaries are marked with colored vertical dividers overlaid on the grid.
+Every cell in the grid has a hover-reveal edit button. Clicking it opens a modal where the plant's name, variety, emoji, and season can be changed. A 100-entry searchable plant database provides auto-fill defaults — selecting a plant from the database populates emoji, spacing, days to harvest, and growing notes automatically.
+
+### Multi-Bed Support
+
+The app supports multiple garden beds with a tab switcher. Each bed has independently configurable dimensions (up to 20 columns × 20 rows). The grid, zone strip, column headers, and dimension label all update dynamically when a bed is resized or switched.
+
+### Companion Planting Intelligence
+
+After every `renderGrid()` call, a companion planting analysis runs against the active layout:
+
+- A compatibility matrix of 30+ plant keys defines good and bad neighbor pairs
+- Each plant is checked against all adjacent cells (including diagonals and multi-cell spans)
+- Cells with good neighbors get a small green ✓ badge; cells with bad neighbors get a red ✕ badge
+- A collapsible panel below the zone strip shows the full analysis with horticultural notes for each detected pair (e.g. *"Onions deter aphids and other tomato pests"*)
+- The analysis re-runs automatically when the season is toggled or any plant is edited
+
+### Season History & Compare
+
+Any layout snapshot can be archived with a single tap:
+
+- Archives store the full plant layout, harvest log, bed configuration, and metadata
+- Up to 20 archives are stored in `localStorage`
+- The Season History card at the bottom of the page lists all archives
+- Clicking **Compare** on any archive opens a modal showing the diff against the current live layout — new plants (green), removed plants (red), and unchanged plants — plus a harvest totals comparison
+
+### Harvest Logging & Yield Tracking
+
+A dedicated harvest log section allows logging individual harvests with plant name, emoji, date, quantity, unit, and notes. The log maintains:
+
+- Running yield totals grouped by plant with emoji
+- A scrollable history table sorted newest first
+- CSV export of the full season's harvest data
+- Emoji auto-fill when a plant name matches the database or grid
 
 ### Season Toggle
 
-The app supports two seasonal views — Spring and Summer — toggled by buttons at the top of the grid. The toggle works via a CSS class on the `<body>` element:
+Two seasonal views — Spring and Summer — are toggled by buttons at the top of the grid. The toggle works via a CSS class on `<body>`:
 
-- `body.spring` hides elements with class `su-only` (summer-only content)
-- `body.summer` hides elements with class `sp-only` (spring-only content)
+- `body.spring` hides `.su-only` elements
+- `body.summer` hides `.sp-only` elements
 
-This allows the same plot layout to show different crops for different seasons without duplicating the HTML structure. A summer-mode hint banner also appears when summer is active, reminding the user of succession planting considerations.
-
-### Harvest Tracker
-
-The right panel of the main view is a harvest tracker that maintains per-plant expected harvest date records. Each plant entry has a date input; once a date is selected, the panel calculates whether harvest is upcoming, due today, or past due — and color-codes the result accordingly (green for on-track, amber for soon, muted for past). The tracker body scrolls independently of the plot blueprint so both panels remain useful simultaneously on larger screens.
+The companion planting analysis and harvest plant autocomplete both respond to the active season automatically.
 
 ### Watering Dashboard
 
-Below the plot, a two-zone watering dashboard provides quick-action buttons for logging watering events:
-
-- **Mist** — light surface watering for seedlings and shallow-rooted crops
-- **Soak** — deep watering for established root systems
-
-Each zone (Spring and Summer) has independent watering controls. The last-watered timestamp is stored in JSONBin and displayed with color-coded freshness: green for watered recently, amber for due, and orange for overdue based on days since last watering.
-
-### Plant Reference Table
-
-Below the watering dashboard, a plant schedule table lists every crop in the plot with:
-
-- Transplant or direct-seed date
-- Zone assignment
-- Expected days to harvest
-- Companion planting notes
-
-This serves as a quick reference without requiring the analyst to hover over individual grid cells.
+A two-zone watering dashboard below the plot provides quick-action buttons for logging Mist and Soak events. Last-watered timestamps are stored in JSONBin and displayed with color-coded freshness: green (recent), amber (due), orange (overdue).
 
 ### Mobile Optimization
 
-The layout was built for mobile use in a real outdoor environment. Key mobile considerations:
+The layout is built for real outdoor use on a phone:
 
-- **Responsive layout**: On screens narrower than 900px, the blueprint and harvest tracker stack vertically instead of sitting side-by-side
-- **Touch scrolling**: The plot blueprint gets horizontal scroll with `-webkit-overflow-scrolling: touch` so the full 12-column grid is accessible via swipe on a phone
-- **Minimum plot width**: A CSS `min-width` calculation prevents the grid from collapsing below a readable size on small screens
-- **Touch targets**: Season buttons and watering action buttons have `min-height: 44px` and `touch-action: manipulation` for reliable tap registration
-- **Tap highlight suppression**: `-webkit-tap-highlight-color: transparent` removes the blue flash on interactive elements
-- **Sunlight legibility**: High-contrast color scheme with 1.5px grid lines chosen for visibility in direct outdoor light
+- **Horizontal scroll** — the blueprint scrolls left-right on mobile with `touch-action: pan-x pan-y` on the scroll container (not the inner content — a common iOS pitfall) and `overscroll-behavior-x: contain` to prevent the page from stealing the gesture
+- **Smaller cells on mobile** — `--CW` drops from 58px to 48px on screens under 900px, reducing total scroll distance
+- **Stacked layout** — blueprint and harvest tracker stack vertically below 900px
+- **Large touch targets** — season and watering buttons have `min-height: 40px` and `touch-action: manipulation`
+- **Sunlight contrast** — high-contrast color scheme with 1.5px grid lines for outdoor legibility
+- **GPU compositing** — `transform: translateZ(0)` on the scroll container eliminates scroll stutter on older iPhones
+
+### Progressive Web App
+
+- **Service worker** — pre-caches `index.html` on install; serves from cache when offline using a network-first strategy
+- **Manifest** — full `manifest.json` with name, theme color, display mode, and SVG icon
+- **Install prompt** — "Install App" button appears automatically on Android/Chrome via `beforeinstallprompt`
+- **iOS home screen** — Apple PWA meta tags enable full-screen standalone mode when added via Safari Share → Add to Home Screen
+- **Offline banner** — sticky red strip appears when connectivity drops, disappears on reconnect
 
 ### Typography and Visual Design
 
-Three typefaces are loaded from Google Fonts to establish a horticultural aesthetic that's readable and unambiguous outdoors:
-
 | Typeface | Use |
 |----------|-----|
-| Playfair Display | Section headings, panel titles — elegant serif with horticultural character |
-| DM Sans | Body text, notes, general UI — clean and readable at small sizes |
-| DM Mono | Labels, badges, timestamps, data values — monospaced for scannable data |
+| Playfair Display | Section headings, panel titles |
+| DM Sans | Body text, notes, general UI |
+| DM Mono | Labels, badges, timestamps, data values |
 
-The color palette is built around a soil/bark/sprout theme:
+Color palette built around a soil/bark/sprout theme:
 
 | Token | Hex | Meaning |
 |-------|-----|---------|
@@ -147,24 +176,23 @@ The color palette is built around a soil/bark/sprout theme:
 
 ## Features
 
-- **Live weather bar** — current temperature, humidity, wind, and precipitation for the local area
-- **Frost alert** — pulsing red header when overnight temps ≤ 36°F
-- **Wind alert** — pulsing red header when gusts exceed 30 mph
-- **Visual plot blueprint** — 4' × 12' CSS grid with per-crop cell rendering
-- **Zone coloring** — spring, summer, and trellis zones visually differentiated
-- **Season toggle** — switch between spring and summer views
-- **Harvest tracker** — per-plant harvest date calculator with due/overdue states
-- **Watering dashboard** — quick-log Mist and Soak events per zone
-- **Overdue watering indicators** — color-coded freshness based on last-watered date
-- **Conflict-aware sync** — timestamp handshake prevents multi-device write collisions
-- **NoSQL cloud persistence** — JSONBin.io stores all state, accessible from any device
-- **Plant reference table** — transplant dates, spacing, days to harvest
-- **Growing notes** — seasonal guidance cards for key crops
-- **PWA-ready** — Apple mobile web app meta tags for home screen installation
-- **Dynamic plant management** — hover any cell to edit name, variety, emoji, or season; clear cells and repurpose slots without touching code
-- **Cloud-synced plant layout** — plant edits are included in the JSONBin payload and sync across devices
-- **Mobile-optimized** — horizontal scroll blueprint, large touch targets, sunlight contrast
-- **Zero dependencies** — single HTML file, no npm, no build step
+- **Live weather bar** — temperature, humidity, wind, and precipitation
+- **Frost & wind alerts** — pulsing red header + push notifications at 6 PM
+- **Visual plot blueprint** — CSS Grid with per-crop specialty cell rendering
+- **Dynamic plant management** — edit any cell in the UI, no code changes needed
+- **100-entry plant database** — searchable, auto-fills defaults on selection
+- **Multi-bed support** — add beds, resize up to 20×20, tab switcher
+- **Companion planting intelligence** — cell badges + collapsible analysis panel with notes
+- **Season history & compare** — archive layouts, diff against current, harvest comparison
+- **Harvest logging** — per-entry log with totals, emoji, and CSV export
+- **Season toggle** — Spring / Summer views with per-plant season assignment
+- **Watering dashboard** — Mist and Soak logging with color-coded freshness
+- **Conflict-aware sync** — timestamp handshake blocks multi-device write collisions
+- **Offline write queue** — saves queue locally when offline, auto-sync on reconnect
+- **JSONBin.io cloud persistence** — all state synced across devices
+- **Progressive Web App** — service worker, manifest, install prompt, offline mode
+- **Mobile horizontal scroll** — correct `touch-action` on scroll container, works on all iOS versions
+- **Zero dependencies** — no npm, no framework, no build step
 
 ---
 
@@ -172,50 +200,58 @@ The color palette is built around a soil/bark/sprout theme:
 
 ### Requirements
 
-- A **JSONBin.io** account — free tier is sufficient. Create a bin and copy the Master Key.
-- An **OpenWeatherMap** account — free tier with One Call 3.0 enabled. Copy the API key.
+- A **JSONBin.io** account — free tier is sufficient. Copy the Master Key from the API Keys page.
+- An **OpenWeatherMap** account — free tier. Copy the API key.
 
 ### Configuration
 
-Open `avon_lake_garden_final.html` in a text editor. Scroll to the `/* ── CONFIG ── */` section near the bottom of the file and fill in your credentials:
+Open `index.html` in a text editor and find the two configuration blocks:
 
+**Weather (around line 846):**
 ```javascript
-const BIN_KEY     = 'YOUR_JSONBIN_MASTER_KEY';   // JSONBin Master Key
-const WEATHER_KEY = 'YOUR_OPENWEATHERMAP_KEY';   // OpenWeatherMap API key
-const LAT         = 'YOUR_LATITUDE';              // Latitude
-const LON         = 'YOUR_LONGITUDE';             // Longitude
+var OWM = 'YOUR_OPENWEATHERMAP_API_KEY';
+var ZIP = 'YOUR_ZIP_CODE';
 ```
 
-Adjust `LAT` and `LON` if deploying for a different location.
+**Cloud sync (around line 910):**
+```javascript
+var API_KEY = 'YOUR_JSONBIN_API_KEY';
+```
+
+The JSONBin bin ID is created automatically on first load and stored in `localStorage` — no manual bin setup needed.
 
 ### Running Locally
 
-Open `avon_lake_garden_final.html` directly in any modern browser. Due to browser CORS restrictions on `file://` URLs, the weather and JSONBin API calls may be blocked locally. For full functionality, serve the file over HTTP:
+Due to browser CORS restrictions on `file://` URLs, serve the files over HTTP for full functionality:
 
 ```bash
 # Python (built-in)
 python3 -m http.server 8080
-# Then open http://localhost:8080/avon_lake_garden_final.html
+# Then open http://localhost:8080
 ```
 
 ### Deploying to Netlify
 
-1. Drag and drop the `avon_lake_garden_final.html` file into the Netlify drop zone at app.netlify.com
-2. Netlify assigns a public HTTPS URL automatically
-3. Access from any device at that URL — bookmark it or add to iPhone home screen
+1. Go to **app.netlify.com/drop**
+2. Drag the entire project folder in — all four files must be in the same directory
+3. Netlify assigns a public HTTPS URL automatically
+4. Access from any device, bookmark it, or add to iPhone home screen
+
+> All four files (`index.html`, `sw.js`, `manifest.json`, `icon.svg`) must be deployed together in the same directory for the service worker and manifest to resolve correctly.
 
 ### Installing on iPhone Home Screen
 
 1. Open the Netlify URL in Safari on iPhone
 2. Tap the Share button → **Add to Home Screen**
-3. The app installs with the title "My Garden 2026" and opens full-screen without browser chrome
+3. The app installs as a standalone PWA titled "My Garden 2026"
 
 ---
 
 ## Limitations
 
-- Weather data is fetched once on page load. Refresh the page to update weather conditions.
+- Weather data is fetched once on page load. Refresh to update conditions.
+- Push notifications require the app to be open or installed as a PWA. iOS Web Push requires iOS 16.4+ with the app added to the home screen.
 - The timestamp handshake conflict detection is designed for two concurrent users. High-frequency simultaneous writes from many users are not supported.
 - JSONBin.io free tier has request rate limits. For heavy use, a paid tier or alternative persistence layer is recommended.
-- The plot layout supports editing individual cells through the UI, but adding new bed dimensions or more than 12 columns requires a code change.
+- Season history archives are stored in `localStorage` — they are device-local and not synced to JSONBin.
 - OpenWeatherMap One Call 3.0 requires a paid subscription after the free tier request limit is reached.

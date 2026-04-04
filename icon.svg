@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#2C1A0E"/>
+  <!-- Soil line -->
+  <rect x="80" y="340" width="352" height="88" rx="12" fill="#3A2210"/>
+  <!-- Stem -->
+  <rect x="242" y="220" width="28" height="132" rx="10" fill="#6B9E3A"/>
+  <!-- Left leaf -->
+  <ellipse cx="185" cy="248" rx="62" ry="36" fill="#5C8F2E" transform="rotate(-30 185 248)"/>
+  <!-- Right leaf -->
+  <ellipse cx="327" cy="248" rx="62" ry="36" fill="#6BAA35" transform="rotate(30 327 248)"/>
+  <!-- Top sprout -->
+  <ellipse cx="256" cy="188" rx="38" ry="52" fill="#8AB55A" transform="rotate(0 256 188)"/>
+  <!-- Soil texture dots -->
+  <circle cx="140" cy="368" r="8" fill="#4A2C14" opacity="0.7"/>
+  <circle cx="200" cy="375" r="6" fill="#4A2C14" opacity="0.5"/>
+  <circle cx="310" cy="370" r="7" fill="#4A2C14" opacity="0.6"/>
+  <circle cx="380" cy="365" r="9" fill="#4A2C14" opacity="0.7"/>
+  <!-- Gold accent ring -->
+  <circle cx="256" cy="256" r="236" fill="none" stroke="#C8923A" stroke-width="8" opacity="0.35"/>
+</svg>
