@@ -29,24 +29,22 @@
 
   /* ── THE SCROLL CONTAINER ─────────────────────────────────────────────
      Wraps ONLY the plot and zone-strip.
-     Simple block-level overflow-x: scroll — most reliable on iOS Safari.
-     No touch-action: let iOS detect gesture direction naturally.
-     align-items: flex-start: prevents flex stretch from shrinking the
-     CSS Grid cells to the container width (would break the layout).
+     display: block removes all flex cross-axis sizing complications.
+     A block div with overflow-x: scroll and wider children always
+     scrolls on iOS — no touch-action needed, let iOS detect naturally.
      ─────────────────────────────────────────────────────────────────── */
   .plot-scroller {
+    display: block;
     overflow-x: scroll;
-    overflow-y: visible;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    align-items: flex-start;
     overscroll-behavior-x: contain;
-    padding-bottom: 6px; /* room for scroll indicator */
+    padding-bottom: 6px;
   }
 
-  /* Hard min-width keeps cells from collapsing inside the scroll view */
-  .plot      { min-width: calc(var(--LW) + 12 * var(--CW)); flex-shrink: 0; }
-  .zone-strip{ min-width: calc(var(--LW) + 12 * var(--CW)); flex-shrink: 0; }
+  /* Hard min-width makes each child wider than the container → triggers scroll */
+  .plot       { min-width: calc(var(--LW) + 12 * var(--CW)); margin-bottom: 7px; }
+  .zone-strip { min-width: calc(var(--LW) + 12 * var(--CW)); }
 
   /* Tracker full width below */
   .hp { width: 100% !important; max-height: 380px; }
@@ -1646,6 +1644,8 @@ var DEFAULT_PLANTS = [
     p.variety = document.getElementById('pe-variety').value.trim();
     p.emoji   = document.getElementById('pe-emoji').value.trim();
     p.season  = document.getElementById('pe-season').value;
+    // If cell was blank and user filled in a name, make it visible as a simple cell
+    if(p.type === 'blank' && p.name) p.type = 'simple';
     document.getElementById('plant-modal-overlay').classList.add('modal-hidden');
     editingId = null;
     window.renderGrid();
