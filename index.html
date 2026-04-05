@@ -1659,8 +1659,11 @@ var DEFAULT_PLANTS = [
     p.variety = document.getElementById('pe-variety').value.trim();
     p.emoji   = document.getElementById('pe-emoji').value.trim();
     p.season  = document.getElementById('pe-season').value;
-    // If cell was blank and user filled in a name, make it visible as a simple cell
-    if(p.type === 'blank' && p.name) p.type = 'simple';
+    // Specialty structural types keep their unique rendering (cage, stake, A-frame, onion).
+    // Everything else — blank, squash, yellow-squash, mulch, radish, kale, etc. —
+    // becomes 'simple' so the user's name/emoji/variety changes are actually visible.
+    var keepType = ['tomato','pepper','aframe','aframe-south','onion','red-onion'];
+    if(keepType.indexOf(p.type) === -1 && p.name) p.type = 'simple';
     document.getElementById('plant-modal-overlay').classList.add('modal-hidden');
     editingId = null;
     window.renderGrid();
