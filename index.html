@@ -58,17 +58,7 @@
 
   .grid-section { padding: 14px 12px 10px; }
 
-  /* ── MOBILE EDIT BUTTONS ──────────────────────────────────────────────
-     No hover on touch screens — always show edit buttons at low opacity.
-     Tap the ✏️ to edit. Blank cells get a full-cell tap target instead.
-     ─────────────────────────────────────────────────────────────────── */
-  .cell-edit-btn {
-    opacity: 0.5;
-    padding: 3px 7px;
-    font-size: 11px;
-    touch-action: manipulation;
-  }
-  /* Blank cells: entire cell is the tap target */
+  /* Blank cells on mobile: entire cell is the tap target */
   .blank[data-pid] .cell-edit-btn {
     inset: 0;
     border-radius: 4px;
@@ -341,11 +331,12 @@ body.summer .sp-only { display:none !important; }
   position: absolute; top: 3px; right: 3px;
   background: rgba(0,0,0,0.5); border: 1px solid rgba(200,146,58,0.4);
   border-radius: 3px; padding: 1px 4px; font-size: 9px;
-  cursor: pointer; opacity: 0; transition: opacity 0.15s; z-index: 10;
-  color: var(--gold-lt);
+  cursor: pointer; opacity: 0.35; transition: opacity 0.15s; z-index: 10;
+  color: var(--gold-lt); touch-action: manipulation;
 }
 [data-pid]:hover .cell-edit-btn { opacity: 1; }
-.blank[data-pid]:hover { background: rgba(200,146,58,0.05); cursor: pointer; }
+.blank[data-pid] { cursor: pointer; }
+.blank[data-pid]:hover { background: rgba(200,146,58,0.05); }
 .modal-hidden { display: none !important; }
 
 /* ── Companion planting badges ── */
