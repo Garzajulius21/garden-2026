@@ -12,8 +12,16 @@
 /* ── MOBILE FIXES ── */
 @media (max-width: 900px) {
 
-  /* Smaller cells on mobile */
-  :root { --CW: 48px; --CH: 70px; }
+  /* Smaller cells on mobile — also bump --dash opacity so borders survive GPU compositing */
+  :root { --CW: 48px; --CH: 70px; --dash: rgba(200,146,58,0.65); }
+
+  /* Dashed borders vanish inside overflow:scroll GPU layers on iOS.
+     box-shadow:inset renders via a separate pipeline and survives compositing. */
+  .c, .blank, .tom-c, .pep-c, .onion-c, .af-c, .mulch-c, .sq-c {
+    border-right: none;
+    border-bottom: none;
+    box-shadow: inset -1px 0 0 rgba(200,146,58,0.6), inset 0 -1px 0 rgba(200,146,58,0.6);
+  }
 
   /* Remove overflow:hidden from card — lets child scroll containers work on iOS */
   .card { overflow: visible; }
@@ -24,8 +32,11 @@
     align-items: stretch !important;
   }
 
-  /* grid-left is just a column layout — NOT the scroll container */
-  .grid-left { width: 100%; }
+  /* grid-left is just a column layout — NOT the scroll container.
+     min-width: 0 !important overrides the JS-set inline minWidth (which would
+     otherwise expand grid-left past the viewport, making the whole PAGE scroll
+     horizontally instead of the plot-scroller scrolling). */
+  .grid-left { width: 100%; min-width: 0 !important; }
 
   /* ── THE SCROLL CONTAINER ─────────────────────────────────────────────
      Wraps ONLY the plot and zone-strip.
@@ -58,19 +69,12 @@
 
   .grid-section { padding: 14px 12px 10px; }
 
-  /* Blank cells on mobile: entire cell is the tap target */
-  .blank[data-pid] .cell-edit-btn {
-    inset: 0;
-    border-radius: 4px;
-    border: 1.5px dashed rgba(200,146,58,0.3);
-    background: rgba(200,146,58,0.04);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    opacity: 0.45;
-    padding: 0;
-  }
+  /* Alert labels: smaller text + tighter padding on mobile */
+  .wb-alert-icon { font-size: 8px; letter-spacing: 0.5px; }
+  .weather-bar.alert,
+  .weather-bar.frost-alert,
+  .weather-bar.rain-alert { padding-left: 90px; padding-right: 90px; }
+
 }
 
 /* Season buttons — large tap targets on all screen sizes */
@@ -166,7 +170,8 @@ body.summer .sp-only { display:none !important; }
 
 /* Base cells */
 .c    { border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3px 2px; text-align:center; position:relative; z-index:3; gap:2px; }
-.blank{ border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); position:relative; z-index:3; }
+.blank{ border-right:1.5px dashed var(--dash); border-bottom:1.5px dashed var(--dash); position:relative; z-index:3; cursor:pointer; }
+.blank-hint { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:20px; color:rgba(200,146,58,0.55); pointer-events:none; }
 .ch   { background:rgba(200,146,58,0.15); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:10px; color:var(--gold-lt); border-right:1.5px dashed var(--dash); border-bottom:2px solid rgba(200,146,58,0.45); position:relative; z-index:5; }
 .rh   { background:rgba(200,146,58,0.10); display:flex; align-items:center; justify-content:center; font-family:'DM Mono',monospace; font-size:10px; color:var(--gold-lt); border-right:2px solid rgba(200,146,58,0.45); border-bottom:1.5px dashed var(--dash); position:relative; z-index:5; }
 .lbl  { font-size:7.5px; color:var(--dim); line-height:1.25; }
@@ -292,30 +297,59 @@ body.summer .sp-only { display:none !important; }
   font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gold-lt);
   max-width: 900px; margin: 6px auto 0;
   transition: background 0.4s, border-color 0.4s;
+  position: relative;
 }
+/* High wind / severe — full red bar */
 .weather-bar.alert {
-  background: rgba(180,30,30,0.25);
-  border-color: rgba(220,60,60,0.7);
+  background: rgba(200,30,30,0.30);
+  border-color: rgba(220,60,60,0.85);
   animation: pulse-border 1.8s ease-in-out infinite;
 }
 @keyframes pulse-border {
-  0%,100% { border-color: rgba(220,60,60,0.7); }
-  50%      { border-color: rgba(220,60,60,0.2); }
+  0%,100% { border-color: rgba(220,60,60,0.85); }
+  50%      { border-color: rgba(220,60,60,0.3); }
 }
+/* Frost warning — ice/frost blue bar */
+.weather-bar.frost-alert {
+  background: rgba(160,220,255,0.16);
+  border-color: rgba(140,210,255,0.85);
+  animation: pulse-frost 2s ease-in-out infinite;
+}
+@keyframes pulse-frost {
+  0%,100% { border-color: rgba(140,210,255,0.85); }
+  50%      { border-color: rgba(140,210,255,0.25); }
+}
+/* Rain enough to skip watering — dark blue bar */
 .weather-bar.rain-alert {
-  background: rgba(30,90,190,0.22);
-  border-color: rgba(80,150,240,0.65);
+  background: rgba(20,55,160,0.28);
+  border-color: rgba(70,130,230,0.75);
   animation: pulse-rain 2s ease-in-out infinite;
 }
 @keyframes pulse-rain {
-  0%,100% { border-color: rgba(80,150,240,0.65); }
-  50%      { border-color: rgba(80,150,240,0.2); }
+  0%,100% { border-color: rgba(70,130,230,0.75); }
+  50%      { border-color: rgba(70,130,230,0.2); }
 }
 .wb-item { display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 .wb-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--faint); }
 .wb-val   { font-size: 12px; color: var(--cream); font-weight: 500; }
-.wb-alert-icon { font-size: 16px; animation: spin-warn 1s linear infinite; }
-@keyframes spin-warn { 0%,100%{transform:scale(1);} 50%{transform:scale(1.25);} }
+.wb-alert-icon {
+  font-family: 'DM Mono', monospace; font-size: 9.5px; letter-spacing: 1px;
+  text-transform: uppercase; white-space: nowrap; font-weight: 500;
+  position: absolute; top: 50%; transform: translateY(-50%);
+  animation: spin-warn 1.4s ease-in-out infinite;
+  pointer-events: none;
+}
+.wb-alert-icon.wb-left  { left: 12px; }
+.wb-alert-icon.wb-right { right: 12px; }
+/* Color matches the bar state */
+.weather-bar.alert       .wb-alert-icon { color: #ff9090; }
+.weather-bar.frost-alert .wb-alert-icon { color: #b8e8ff; }
+.weather-bar.rain-alert  .wb-alert-icon { color: #80b8f0; }
+/* Push inner content away from the pinned labels */
+.weather-bar.alert,
+.weather-bar.frost-alert,
+.weather-bar.rain-alert { padding-left: 120px; padding-right: 120px; }
+@keyframes spin-warn { 0%,100%{transform:translateY(-50%) scale(1);} 50%{transform:translateY(-50%) scale(1.05);} }
 .wb-badge {
   font-size: 9px; font-family: 'DM Mono', monospace; padding: 2px 8px;
   border-radius: 10px; background: rgba(74,127,168,0.2); color: var(--sky-lt);
@@ -331,7 +365,7 @@ body.summer .sp-only { display:none !important; }
   position: absolute; top: 3px; right: 3px;
   background: rgba(0,0,0,0.5); border: 1px solid rgba(200,146,58,0.4);
   border-radius: 3px; padding: 1px 4px; font-size: 9px;
-  cursor: pointer; opacity: 0.35; transition: opacity 0.15s; z-index: 10;
+  cursor: pointer; opacity: 0.6; transition: opacity 0.15s; z-index: 10;
   color: var(--gold-lt); touch-action: manipulation;
 }
 [data-pid]:hover .cell-edit-btn { opacity: 1; }
@@ -864,17 +898,20 @@ body.summer .sp-only { display:none !important; }
 // ── SEASON TOGGLE ──
 function setSeason(s){
   document.body.className=s;
+  try { localStorage.setItem('garden_season', s); } catch(e) {}
   document.getElementById('btn-sp').classList.toggle('active',s==='spring');
   document.getElementById('btn-su').classList.toggle('active',s==='summer');
   // Re-run companion analysis for the newly active season
   setTimeout(function(){ if(window._runCompanionAnalysis) window._runCompanionAnalysis(); }, 50);
 }
+// Restore last-used season on load
+(function(){ try { var s=localStorage.getItem('garden_season'); if(s==='summer'||s==='spring') setSeason(s); } catch(e){} })();
 
 // ══════════════════════════════════════════════════
 // WEATHER SYSTEM — OpenWeatherMap
 // ══════════════════════════════════════════════════
 (function(){
-  var OWM='YOUR_OPENWEATHERMAP_API_KEY'; // OpenWeatherMap API key
+  var OWM='YOUR_OWM_KEY'; // OpenWeatherMap API key
   var ZIP='YOUR_ZIP_CODE';
   function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
   function badge(txt,cls){var b=document.createElement('span');b.className='wb-badge '+(cls||'');b.textContent=txt;return b;}
@@ -898,24 +935,23 @@ function setSeason(s){
     var hasSev=f.list.some(function(i){return sevWords.some(function(w){return i.weather[0].description.toLowerCase().indexOf(w)>-1;});});
     var rainWords=['rain','drizzle','shower'];
     var isRain=rainWords.some(function(w){return desc.toLowerCase().indexOf(w)>-1;})||parseFloat(rainIn)>=0.1;
-    var isFrost=low<=36, isWind=gust>30, isAlert=isFrost||isWind||hasSev;
+    var isFrost=low<=36, isWind=gust>30;
     bar.innerHTML='';
-    bar.classList.remove('alert','rain-alert');
-    if(isAlert){bar.classList.add('alert');var ic=document.createElement('span');ic.className='wb-alert-icon';ic.textContent='⚠️';bar.appendChild(ic);}
-    else if(isRain){bar.classList.add('rain-alert');var ic=document.createElement('span');ic.className='wb-alert-icon';ic.textContent='🌧️';bar.appendChild(ic);}
+    bar.classList.remove('alert','frost-alert','rain-alert');
+    // Priority: wind/severe → red · frost only → ice blue · rain → dark blue
+    var alertLabel='';
+    if(isWind||hasSev){bar.classList.add('alert');alertLabel='⚠️ Wind Warning';}
+    else if(isFrost){bar.classList.add('frost-alert');alertLabel='❄️ Frost Warning';}
+    else if(isRain){bar.classList.add('rain-alert');alertLabel='🌧️ Rain: Skip Watering';}
+    // Pin matching labels to far left and far right of the bar
+    function makeAlertIcon(side){var s=document.createElement('span');s.className='wb-alert-icon '+side;s.textContent=alertLabel;return s;}
+    if(alertLabel) bar.appendChild(makeAlertIcon('wb-left'));
     bar.appendChild(wbItem('My Garden',temp+'°F','feels '+feels+'°F'));
-    var lowEl=wbItem('Low Tonight',low+'°F','');
-    if(isFrost)lowEl.appendChild(badge('❄️ Frost Warning','frost'));
-    bar.appendChild(lowEl);
-    var wEl=wbItem('Wind',wind+' mph','gusts '+gust+' mph');
-    if(isWind)wEl.appendChild(badge('💨 High Wind Warning','wind'));
-    bar.appendChild(wEl);
-    var rEl=wbItem('Rain',rainIn+'"','recent');
-    if(parseFloat(rainIn)>=0.5)rEl.appendChild(badge('🌧 Heavy Rain: Skip Watering','heavy-rain'));
-    bar.appendChild(rEl);
-    var cEl=wbItem('Conditions',cap(desc),'');
-    if(hasSev)cEl.appendChild(badge('⛈ Severe Weather Ahead','severe'));
-    bar.appendChild(cEl);
+    bar.appendChild(wbItem('Low Tonight',low+'°F',''));
+    bar.appendChild(wbItem('Wind',wind+' mph','gusts '+gust+' mph'));
+    bar.appendChild(wbItem('Rain',rainIn+'"','recent'));
+    bar.appendChild(wbItem('Conditions',cap(desc),''));
+    if(alertLabel) bar.appendChild(makeAlertIcon('wb-right'));
   }
   function load(){
     var cur=fetch('https://api.openweathermap.org/data/2.5/weather?zip='+ZIP+',us&appid='+OWM+'&units=imperial').then(function(r){return r.json();});
@@ -941,7 +977,7 @@ function setSeason(s){
 // with Pre-Flight Conflict Check before every save
 // ══════════════════════════════════════════════════
 (function(){
-  var API_KEY  = 'YOUR_JSONBIN_API_KEY'; // JSONBin key
+  var API_KEY  = 'YOUR_JSONBIN_KEY'; // JSONBin key
   var STORE_KEY= 'garden2026_bin_id';
   var binId    = localStorage.getItem(STORE_KEY);
   var saveTimer= null;
@@ -1549,11 +1585,12 @@ var DEFAULT_PLANTS = [
     var scClass = sc ? ' '+sc : '';
 
     if(p.type === 'blank'){
-      return '<div class="blank" data-pid="'+p.id+'" style="'+gs+';position:relative;">'+eb+'</div>';
+      return '<div class="blank" data-pid="'+p.id+'" style="'+gs+';position:relative;" onclick="openPlantEdit(event,\''+p.id+'\')"><span class="blank-hint">＋</span>'+eb+'</div>';
     }
     if(p.type === 'simple'){
+      var em = p.emoji || '🌱';
       var icons = '';
-      for(var i=0;i<4;i++) icons += '<span>'+p.emoji+'</span>';
+      for(var i=0;i<4;i++) icons += '<span>'+em+'</span>';
       return '<div class="c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';padding:2px;position:relative;"><div class="g2x2">'+icons+'</div><div class="lbl">'+p.name+'</div>'+(p.variety?'<div class="lbl2">'+p.variety+'</div>':'')+eb+'</div>';
     }
     if(p.type === 'radish'){
@@ -1597,19 +1634,54 @@ var DEFAULT_PLANTS = [
       var ys2 = YELLOW_SQUASH_SVG+YELLOW_SQUASH_SVG;
       return '<div class="sq-c'+scClass+'" data-pid="'+p.id+'" style="'+gs+';position:relative;"><div style="display:flex;gap:3px;">'+ys2+'</div><div style="font-family:\'DM Mono\',monospace;font-size:7px;letter-spacing:1px;text-transform:uppercase;color:var(--sky-lt);line-height:1.3;text-align:center;">'+p.name+' · 2</div>'+eb+'</div>';
     }
-    return '';
+    // Unknown / corrupted type — render as blank so the cell stays in the DOM
+    return '<div class="blank" data-pid="'+p.id+'" style="'+gs+';position:relative;" onclick="openPlantEdit(event,\''+p.id+'\')"><span class="blank-hint">＋</span>'+eb+'</div>';
+  }
+
+  // Ensures every grid position has a plant entry so no cell is unclickable.
+  // Runs before renderGrid — fills gaps left by data corruption, bed-resize, or missing imports.
+  function ensureBedCoverage() {
+    var bed = activeBed();
+    var covered = {};
+    bed.plants.forEach(function(p) {
+      var cs = p.colSpan || 1, rs = p.rowSpan || 1;
+      for (var dc = 0; dc < cs; dc++) {
+        for (var dr = 0; dr < rs; dr++) {
+          covered[(p.col + dc) + ',' + (p.row + dr)] = true;
+        }
+      }
+    });
+    for (var c = 1; c <= bed.cols; c++) {
+      for (var r = 1; r <= bed.rows; r++) {
+        if (!covered[c + ',' + r]) {
+          bed.plants.push({
+            id: 'cell-' + c + '-' + r,
+            col: c, row: r, rowSpan: 1, colSpan: 1,
+            name: '', variety: '', emoji: '', type: 'blank', season: 'both'
+          });
+        }
+      }
+    }
   }
 
   window.renderGrid = function(){
+    ensureBedCoverage();
     var plot = document.getElementById('plot');
-    var old = plot.querySelectorAll('[data-pid]');
-    old.forEach(function(el){ el.parentNode.removeChild(el); });
+    // Build fragment FIRST — if any cell throws, old content stays intact
     var frag = document.createDocumentFragment();
     var tmp = document.createElement('div');
     activePlants().forEach(function(p){
-      tmp.innerHTML = renderCell(p);
+      var html;
+      try { html = renderCell(p); } catch(e) { html = ''; }
+      if(!html) {
+        // Fallback: always render something so the position stays clickable
+        html = '<div class="blank" data-pid="'+p.id+'" style="'+gridStyle(p)+';position:relative;" onclick="openPlantEdit(event,\''+p.id+'\')"><span class="blank-hint">＋</span>'+editBtn(p.id)+'</div>';
+      }
+      tmp.innerHTML = html;
       if(tmp.firstElementChild) frag.appendChild(tmp.firstElementChild);
     });
+    // Atomic swap: remove old, add new in one shot
+    plot.querySelectorAll('[data-pid]').forEach(function(el){ el.parentNode.removeChild(el); });
     plot.appendChild(frag);
   };
 
@@ -1633,6 +1705,20 @@ var DEFAULT_PLANTS = [
         searchEl.addEventListener('input', function() {
           renderSearchResults(filterDB(this.value));
         });
+        // Auto-fill emoji when name is typed manually and matches a DB entry
+        var nameEl = document.getElementById('pe-name');
+        if (nameEl && !nameEl._wired) {
+          nameEl.addEventListener('input', function() {
+            var q = this.value.trim().toLowerCase();
+            if (!q) return;
+            var match = PLANT_DB.find(function(p) { return p.name.toLowerCase() === q; });
+            if (match) {
+              var emojiEl = document.getElementById('pe-emoji');
+              if (emojiEl) emojiEl.value = match.emoji;
+            }
+          });
+          nameEl._wired = true;
+        }
         // Close dropdown when clicking outside
         document.addEventListener('click', function(e) {
           if (!e.target.closest('.plant-search-wrap')) {
@@ -1659,11 +1745,30 @@ var DEFAULT_PLANTS = [
     p.variety = document.getElementById('pe-variety').value.trim();
     p.emoji   = document.getElementById('pe-emoji').value.trim();
     p.season  = document.getElementById('pe-season').value;
-    // Specialty structural types keep their unique rendering (cage, stake, A-frame, onion).
-    // Everything else — blank, squash, yellow-squash, mulch, radish, kale, etc. —
-    // becomes 'simple' so the user's name/emoji/variety changes are actually visible.
-    var keepType = ['tomato','pepper','aframe','aframe-south','onion','red-onion'];
-    if(keepType.indexOf(p.type) === -1 && p.name) p.type = 'simple';
+    // Auto-apply specialty rendering based on plant name.
+    // Tomatoes get the cage cell, peppers get the stake cell, onions get their cell.
+    // Everything else renders as 'simple'. squash/yellow-squash stay simple (SVG issues).
+    var AUTO_TYPE = {
+      'tomato':'tomato','cherry tomato':'tomato','roma tomato':'tomato',
+      'bell pepper':'pepper','jalapeño':'pepper','habanero':'pepper',
+      'banana pepper':'pepper','serrano pepper':'pepper','hot pepper':'pepper',
+      'onion':'onion','yellow onion':'onion','white onion':'onion','sweet onion':'onion',
+      'red onion':'red-onion','purple onion':'red-onion'
+    };
+    // aframe/aframe-south are structural (multi-column) — preserve unless AUTO_TYPE overrides.
+    // All other specialty types (tomato, pepper, onion) are name-driven via AUTO_TYPE.
+    // If the name no longer matches a specialty, they become simple.
+    var structuralTypes = ['aframe','aframe-south'];
+    var autoType = p.name ? AUTO_TYPE[p.name.toLowerCase()] : null;
+    if(autoType) {
+      p.type = autoType;
+    } else if(p.type === 'squash' || p.type === 'yellow-squash') {
+      if(!p.emoji) p.emoji = '🥒';
+      p.type = 'simple';
+    } else if(structuralTypes.indexOf(p.type) === -1 && p.name) {
+      // Name didn't match any specialty → simple (covers tomato→corn, pepper→basil, etc.)
+      p.type = 'simple';
+    }
     document.getElementById('plant-modal-overlay').classList.add('modal-hidden');
     editingId = null;
     window.renderGrid();
@@ -1717,7 +1822,8 @@ var DEFAULT_PLANTS = [
     document.getElementById('pe-name').value    = p.name;
     document.getElementById('pe-emoji').value   = p.emoji;
     document.getElementById('pe-variety').value = p.variety;
-    document.getElementById('pe-season').value  = p.season;
+    // Do NOT copy the DB season — keep whatever season the cell already has.
+    // Copying it would hide the cell if the DB season doesn't match the active view.
     document.getElementById('plant-search-results').classList.remove('open');
     document.getElementById('pe-search').value = '';
   };
@@ -2245,9 +2351,9 @@ var DEFAULT_PLANTS = [
       </label>
     </div>
     <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end;">
-      <button onclick="clearPlantCell()" style="padding:7px 14px;border-radius:6px;border:1px solid rgba(218,54,51,0.4);background:rgba(218,54,51,0.1);color:#ff7b7b;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">Clear Cell</button>
-      <button onclick="closePlantModal()" style="padding:7px 14px;border-radius:6px;border:1px solid rgba(200,146,58,0.3);background:transparent;color:var(--faint);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">Cancel</button>
-      <button onclick="savePlantEdit()" style="padding:7px 14px;border-radius:6px;border:none;background:var(--gold);color:var(--soil);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-weight:600;">Save</button>
+      <button type="button" onclick="clearPlantCell()" style="padding:7px 14px;border-radius:6px;border:1px solid rgba(218,54,51,0.4);background:rgba(218,54,51,0.1);color:#ff7b7b;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">Clear Cell</button>
+      <button type="button" onclick="closePlantModal()" style="padding:7px 14px;border-radius:6px;border:1px solid rgba(200,146,58,0.3);background:transparent;color:var(--faint);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">Cancel</button>
+      <button type="button" onclick="savePlantEdit()" style="padding:7px 14px;border-radius:6px;border:none;background:var(--gold);color:var(--soil);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;font-weight:600;">Save</button>
     </div>
   </div>
 </div>
